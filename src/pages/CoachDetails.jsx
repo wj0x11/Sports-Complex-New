@@ -1,28 +1,20 @@
 import { useParams, Link } from "react-router-dom";
-
-import sportsData from "../data/sportsData";
-
+import { findCoachById } from "../services/sports.service";
 import "../styles/coachDetails.css";
 
 function CoachDetails() {
   const { id } = useParams();
+  const coachId = parseInt(id, 10);
 
-  let selectedCoach = null;
-
-  sportsData.forEach((sport) => {
-    const foundCoach = sport.coaches.find(
-      (coach) => coach.id === parseInt(id)
-    );
-
-    if (foundCoach) {
-      selectedCoach = foundCoach;
-    }
-  });
+  const { coach: selectedCoach, sport: parentSport } = findCoachById(coachId);
 
   if (!selectedCoach) {
     return (
-      <div className="container">
-        <h1>Coach Not Found</h1>
+      <div className="coach-page">
+        <div className="container">
+          <h1>Coach Not Found</h1>
+          <Link to="/sports">Browse Sports</Link>
+        </div>
       </div>
     );
   }
@@ -31,104 +23,52 @@ function CoachDetails() {
     <div className="coach-page">
       <div className="container">
         <div className="coach-container">
-          {/* TOP SECTION */}
-
           <div className="coach-top">
-            <h1 className="coach-name">
-              {selectedCoach.name}
-            </h1>
-
-            <p className="coach-rating">
-              ⭐ {selectedCoach.rating} Rating
-            </p>
+            {selectedCoach.photo && (
+              <img
+                src={selectedCoach.photo}
+                alt={selectedCoach.name}
+                className="coach-detail-image"
+              />
+            )}
+            <h1 className="coach-name">{selectedCoach.name}</h1>
+            {selectedCoach.position && (
+              <p className="coach-position">{selectedCoach.position}</p>
+            )}
+            <p className="coach-rating">⭐ {selectedCoach.rating} Rating</p>
           </div>
 
-          {/* CONTENT */}
-
           <div className="coach-content">
-            {/* STATS */}
-
             <div className="coach-grid">
               <div className="coach-stat-card">
-                <p className="coach-stat-title">
-                  Sport
-                </p>
-
-                <h3 className="coach-stat-value">
-                  {selectedCoach.sport}
-                </h3>
+                <p className="coach-stat-title">Sport</p>
+                <h3 className="coach-stat-value">{parentSport?.name}</h3>
               </div>
 
               <div className="coach-stat-card">
-                <p className="coach-stat-title">
-                  Experience
-                </p>
-
-                <h3 className="coach-stat-value">
-                  {selectedCoach.experience}
-                </h3>
+                <p className="coach-stat-title">Experience</p>
+                <h3 className="coach-stat-value">{selectedCoach.experience}</h3>
               </div>
 
               <div className="coach-stat-card">
-                <p className="coach-stat-title">
-                  Specialization
-                </p>
-
-                <h3 className="coach-stat-value">
-                  {selectedCoach.specialization}
-                </h3>
-              </div>
-
-              <div className="coach-stat-card">
-                <p className="coach-stat-title">
-                  Total Trainees
-                </p>
-
-                <h3 className="coach-stat-value">
-                  {selectedCoach.trainees}
-                </h3>
+                <p className="coach-stat-title">Specialization</p>
+                <h3 className="coach-stat-value">{selectedCoach.speciality}</h3>
               </div>
             </div>
 
-            {/* BIOGRAPHY */}
-
-            <div className="bio-section">
-              <h2 className="bio-title">
-                Biography
-              </h2>
-
-              <p className="bio-text">
-                {selectedCoach.bio}
-              </p>
+            <div className="coach-description">
+              <h2>About Coach</h2>
+              <p>{selectedCoach.description}</p>
             </div>
 
-            {/* AVAILABILITY */}
-
-            <div className="bio-section">
-              <h2 className="bio-title">
-                Availability
-              </h2>
-
-              <p className="bio-text">
-                {selectedCoach.availability}
-              </p>
-            </div>
-
-            {/* BUTTONS */}
-
-            <div className="action-buttons">
-              <Link to="/booking">
-                <button className="primary-action-btn">
-                  Book Training Session
-                </button>
+            {parentSport && (
+              <Link
+                to={`/sports/${parentSport.slug}`}
+                className="coach-book-btn"
+              >
+                Book with {selectedCoach.name}
               </Link>
-
-              <Link to="/">
-                <button className="secondary-action-btn">
-                  Back To Home
-                </button>
-              </Link>
-            </div>
+            )}
           </div>
         </div>
       </div>

@@ -29,11 +29,18 @@ function AdminDashboard() {
   const [utilization, setUtilization] = useState([]);
 
   useEffect(() => {
-    apiClient.getAdminOverview().then((overview) => {
-      setBookings(overview.bookings);
-      setSportsCount(overview.sports.length);
-      setUtilization(overview.utilization);
-    });
+    const loadOverview = () => {
+      apiClient.getAdminOverview().then((overview) => {
+        setBookings(overview.bookings);
+        setSportsCount(overview.sports.length);
+        setUtilization(overview.utilization);
+      });
+    };
+
+    loadOverview();
+
+    window.addEventListener("bookings-updated", loadOverview);
+    return () => window.removeEventListener("bookings-updated", loadOverview);
   }, []);
 
   const filteredBookings = useMemo(() => {
@@ -363,49 +370,31 @@ function AdminDashboard() {
             <h2>Performance</h2>
 
             <div className="analytics-list">
-              <div>
-                <div className="analytics-row">
-                  <span>{utilization[0]?.sport || "Badminton"} Usage</span>
-                  <strong>{utilization[0]?.usageCount || 0}</strong>
-                </div>
+              {utilization.map((item, index) => (
+                <div key={item.slug || item.sport}>
+                  <div className="analytics-row">
+                    <span>{item.sport} Usage</span>
+                    <strong>{item.usageCount || 0}</strong>
+                  </div>
 
-                <div className="analytics-bar">
-                  <div className="analytics-fill badminton-fill"></div>
+                  <div className="analytics-bar">
+                    <div
+                      className={`analytics-fill ${
+                        index % 4 === 0
+                          ? "badminton-fill"
+                          : index % 4 === 1
+                            ? "table-fill"
+                            : index % 4 === 2
+                              ? "revenue-fill"
+                              : "table-fill"
+                      }`}
+                      style={{
+                        width: `${Math.min(100, (item.usageCount || 0) * 20)}%`,
+                      }}
+                    ></div>
+                  </div>
                 </div>
-              </div>
-
-              <div>
-                <div className="analytics-row">
-                  <span>{utilization[1]?.sport || "Table Tennis"}</span>
-                  <strong>{utilization[1]?.usageCount || 0}</strong>
-                </div>
-
-                <div className="analytics-bar">
-                  <div className="analytics-fill table-fill"></div>
-                </div>
-              </div>
-
-              <div>
-                <div className="analytics-row">
-                  <span>{utilization[2]?.sport || "Basketball"} Usage</span>
-                  <strong>{utilization[2]?.usageCount || 0}</strong>
-                </div>
-
-                <div className="analytics-bar">
-                  <div className="analytics-fill revenue-fill"></div>
-                </div>
-              </div>
-
-              <div>
-                <div className="analytics-row">
-                  <span>{utilization[3]?.sport || "Volleyball"} Usage</span>
-                  <strong>{utilization[3]?.usageCount || 0}</strong>
-                </div>
-
-                <div className="analytics-bar">
-                  <div className="analytics-fill table-fill"></div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>

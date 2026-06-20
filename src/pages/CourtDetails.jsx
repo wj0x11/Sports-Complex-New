@@ -1,28 +1,20 @@
 import { useParams, Link } from "react-router-dom";
-
-import sportsData from "../data/sportsData";
-
+import { findCourtById } from "../services/sports.service";
 import "../styles/courtDetails.css";
 
 function CourtDetails() {
   const { id } = useParams();
+  const courtId = parseInt(id, 10);
 
-  let selectedCourt = null;
-
-  sportsData.forEach((sport) => {
-    const foundCourt = sport.courts.find(
-      (court) => court.id === parseInt(id)
-    );
-
-    if (foundCourt) {
-      selectedCourt = foundCourt;
-    }
-  });
+  const { court: selectedCourt, sport: parentSport } = findCourtById(courtId);
 
   if (!selectedCourt) {
     return (
-      <div className="container">
-        <h1>Court Not Found</h1>
+      <div className="court-page">
+        <div className="container">
+          <h1>Court Not Found</h1>
+          <Link to="/sports">Browse Sports</Link>
+        </div>
       </div>
     );
   }
@@ -31,95 +23,44 @@ function CourtDetails() {
     <div className="court-page">
       <div className="container">
         <div className="court-container">
-
           <div className="court-top">
-            <h1 className="court-name">
-              {selectedCourt.name}
-            </h1>
-
-            <p className="court-status">
-              {selectedCourt.status}
-            </p>
+            <h1 className="court-name">{selectedCourt.name}</h1>
+            {parentSport && (
+              <p className="court-status">{parentSport.name}</p>
+            )}
           </div>
 
-
           <div className="court-content">
-
             <div className="court-grid">
               <div className="court-card">
-                <p className="court-card-title">
-                  Court Type
-                </p>
+                <p className="court-card-title">Sport</p>
+                <h3 className="court-card-value">{parentSport?.name}</h3>
+              </div>
 
+              <div className="court-card">
+                <p className="court-card-title">Price Per Hour</p>
                 <h3 className="court-card-value">
-                  {selectedCourt.type}
+                  LKR {selectedCourt.pricePerHour}
                 </h3>
               </div>
 
               <div className="court-card">
-                <p className="court-card-title">
-                  Price Per Hour
-                </p>
-
-                <h3 className="court-card-value">
-                  ${selectedCourt.price}
-                </h3>
-              </div>
-
-              <div className="court-card">
-                <p className="court-card-title">
-                  Capacity
-                </p>
-
-                <h3 className="court-card-value">
-                  {selectedCourt.capacity}
-                </h3>
-              </div>
-
-              <div className="court-card">
-                <p className="court-card-title">
-                  Availability
-                </p>
-
-                <h3 className="court-card-value">
-                  {selectedCourt.availability}
-                </h3>
+                <p className="court-card-title">Capacity</p>
+                <h3 className="court-card-value">{selectedCourt.capacity}</h3>
               </div>
             </div>
 
+            {parentSport && (
+              <div className="booking-buttons">
+                <Link to={`/sports/${parentSport.slug}`}>
+                  <button className="book-btn">Book This Facility</button>
+                </Link>
 
-            <div className="facilities-section">
-              <h2 className="facilities-title">
-                Facilities
-              </h2>
-
-              <div className="facilities-list">
-                {selectedCourt.facilities.map(
-                  (facility, index) => (
-                    <div
-                      className="facility-badge"
-                      key={index}
-                    >
-                      {facility}
-                    </div>
-                  )
-                )}
+                <Link to="/sports">
+                  <button className="back-btn">Back To Sports</button>
+                </Link>
               </div>
-            </div>
-
-            <div className="booking-buttons">
-              <Link to="/booking-form">
-                <button className="book-btn">
-                  Book Court
-                </button>
-              </Link>
-
-              <Link to="/">
-                <button className="back-btn">
-                  Back To Home
-                </button>
-              </Link>
-            </div>
+            )}
           </div>
         </div>
       </div>

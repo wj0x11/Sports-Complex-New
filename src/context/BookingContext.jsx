@@ -122,7 +122,6 @@ export function BookingProvider({ children }) {
     }
 
     const selectedDay = getDayName(bookingDetails.bookingDate);
-
     const timetableForDay = selectedSport?.timetable?.[selectedDay];
 
     if (!timetableForDay) {
@@ -131,7 +130,6 @@ export function BookingProvider({ children }) {
 
     const allSlots = [
       ...(timetableForDay.morning || []),
-
       ...(timetableForDay.evening || []),
     ];
 
@@ -139,22 +137,19 @@ export function BookingProvider({ children }) {
       JSON.parse(localStorage.getItem("bookedSlots")) || {};
 
     const bookingDate = bookingDetails.bookingDate;
-
     let slotKey = null;
 
-    if (selectedSport.slug === "badminton") {
+    if (selectedSport.type === "court") {
       if (!selectedCourt) {
         return [];
       }
-
       slotKey = selectedCourt.id;
     }
 
-    if (selectedSport.slug === "table-tennis") {
+    if (selectedSport.type === "coach") {
       if (!selectedCoach) {
         return [];
       }
-
       slotKey = selectedCoach.id;
     }
 
@@ -162,7 +157,6 @@ export function BookingProvider({ children }) {
 
     return allSlots.map((slot) => ({
       slot,
-
       status: bookedSlots.includes(slot) ? "Booked" : "Available",
     }));
   }, [selectedSport, selectedCourt, selectedCoach, bookingDetails.bookingDate]);
@@ -197,8 +191,7 @@ export function BookingProvider({ children }) {
      PRICING
   ========================= */
 
-  const courtFee =
-    selectedSport?.slug === "badminton" ? selectedCourt?.pricePerHour || 0 : 0;
+  const courtFee = selectedCourt?.pricePerHour || 0;
 
   const coachFee = selectedCoach?.price || 0;
 

@@ -42,11 +42,20 @@
   border-radius: 24px;
   overflow: hidden;
   box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
-  transition: 0.3s ease;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
 }
 
 .sport-card:hover {
-  transform: translateY(-8px);
+  transform: translateY(-10px);
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.14);
+}
+
+.sport-card-image {
+  transition: transform 0.4s ease;
+}
+
+.sport-card:hover .sport-card-image {
+  transform: scale(1.05);
 }
 
 .sport-card-image {
@@ -94,4 +103,10 @@
   background: #84cc16;
   color: white;
   font-weight: 700;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.view-sport-btn:hover {
+  background: #65a30d;
+  transform: translateY(-2px);
 }

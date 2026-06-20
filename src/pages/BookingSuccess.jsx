@@ -144,7 +144,7 @@ Thank you for choosing Battle Blast Sports Complex.
                   <strong>{sport?.name}</strong>
                 </div>
 
-                {sport?.slug === "badminton" && court && (
+                {sport?.type === "court" && court && (
                   <div className="success-row">
                     <span>Court</span>
 

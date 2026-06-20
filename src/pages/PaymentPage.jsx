@@ -51,6 +51,8 @@ function PaymentPage() {
 
       user: currentUser,
 
+      userEmail: currentUser?.email || "",
+
       sport: selectedSport,
 
       court: selectedCourt,
@@ -88,7 +90,7 @@ function PaymentPage() {
     const bookingDate = bookingDetails.bookingDate;
 
     const slotOwnerId =
-      selectedSport?.slug === "badminton"
+      selectedSport?.type === "court"
         ? selectedCourt?.id
         : selectedCoach?.id;
 
@@ -115,6 +117,7 @@ function PaymentPage() {
     const updatedBookings = [...existingBookings, newBooking];
 
     localStorage.setItem("sportsBookings", JSON.stringify(updatedBookings));
+    window.dispatchEvent(new Event("bookings-updated"));
 
     setTimeout(() => {
       setProcessingPayment(false);
@@ -264,7 +267,7 @@ function PaymentPage() {
                 </div>
               )}
 
-              {selectedSport?.slug === "badminton" && selectedCourt && (
+              {selectedSport?.type === "court" && selectedCourt && (
                 <div className="summary-row">
                   <span>Court</span>
 

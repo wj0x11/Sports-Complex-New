@@ -246,7 +246,30 @@
     inset 1px 1px 0px rgba(255, 255, 255, 0.18);
 }
 
-.send-message-btn:hover {
+.send-message-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.contact-alert {
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.contact-error {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.contact-success {
+  color: #15803d;
+  background: rgba(21, 128, 61, 0.1);
+}
+
+.send-message-btn:hover:not(:disabled) {
   transform: translateY(-4px);
 
   box-shadow:

@@ -12,7 +12,6 @@
     linear-gradient(to bottom, #f8fafc, #eef2f7);
 }
 
-/* HERO */
 
 .sport-hero {
   position: relative;
@@ -30,6 +29,86 @@
   box-shadow:
     0px 22px 50px rgba(15, 23, 42, 0.14),
     inset 1px 1px 0px rgba(255, 255, 255, 0.04);
+}
+
+.sport-hero-image {
+  background-size: cover;
+  background-position: center;
+  min-height: 320px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(2, 6, 23, 0.88),
+    rgba(15, 23, 42, 0.72)
+  );
+  z-index: 1;
+}
+
+.sport-hero-image .hero-content-wrapper {
+  position: relative;
+  z-index: 2;
+}
+
+.booking-info-card {
+  padding: 28px 32px;
+  border-radius: 24px;
+  background: white;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.booking-info-card p {
+  color: #475569;
+  line-height: 1.8;
+  font-size: 15px;
+  margin: 0;
+}
+
+.coach-card-image,
+.modal-coach-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 18px;
+  margin-bottom: 14px;
+}
+
+.coach-position {
+  color: #84cc16;
+  font-size: 13px;
+  font-weight: 700;
+  margin: -4px 0 12px;
+}
+
+.coach-bio {
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 12px 0 16px;
+}
+
+.equipment-grid .equipment-card {
+  min-height: 200px;
+}
+
+.sport-not-found {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.sport-not-found h1 {
+  margin-bottom: 12px;
+}
+
+.sport-not-found p {
+  color: #64748b;
+  margin-bottom: 24px;
 }
 
 .sport-hero::before {

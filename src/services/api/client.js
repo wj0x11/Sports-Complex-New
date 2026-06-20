@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getAdminSportSummaries } from '../sports.service';
 
 
 const API_URL = "http://localhost:5000";
@@ -59,44 +60,41 @@ export const apiClient = {
 
   async getAdminOverview() {
     const bookings = JSON.parse(localStorage.getItem("sportsBookings")) || [];
-    const defaultSports = [
-      { id: "sport-badminton", name: "Badminton" },
-      { id: "sport-table-tennis", name: "Table Tennis" },
-      { id: "sport-basketball", name: "Basketball" },
-      { id: "sport-volleyball", name: "Volleyball" }
-    ];
-    let sports = defaultSports;
-    try {
-      const storedDb = JSON.parse(localStorage.getItem("sportsComplexMockDb"));
-      if (storedDb && storedDb.sports) {
-        sports = storedDb.sports;
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    const sports = getAdminSportSummaries();
 
     const utilizationMap = {};
-    sports.forEach(s => {
+    sports.forEach((s) => {
       utilizationMap[s.name] = 0;
     });
 
-    bookings.forEach(b => {
+    bookings.forEach((b) => {
       const sportName = b.sport?.name || b.sport || "Unknown";
       if (utilizationMap[sportName] !== undefined) {
         utilizationMap[sportName]++;
       }
     });
 
-    const utilization = sports.map(s => ({
+    const utilization = sports.map((s) => ({
       sport: s.name,
-      usageCount: utilizationMap[s.name] || 0
+      slug: s.slug,
+      usageCount: utilizationMap[s.name] || 0,
     }));
 
     return {
       bookings,
       sports,
-      utilization
+      utilization,
     };
+  },
+
+  async submitContact(payload) {
+    const response = await api.post('/contact', payload);
+    return response.data;
+  },
+
+  async getContactMessages() {
+    const response = await api.get('/contact');
+    return response.data;
   },
 
   async updateBookingStatus(bookingId, status) {
@@ -104,10 +102,11 @@ export const apiClient = {
       const bookings = JSON.parse(localStorage.getItem("sportsBookings")) || [];
       const updated = bookings.map(b => b.id === bookingId ? { ...b, status } : b);
       localStorage.setItem("sportsBookings", JSON.stringify(updated));
+      window.dispatchEvent(new Event("bookings-updated"));
       return { success: true };
     } catch (e) {
       console.error(e);
       return { success: false };
     }
-  }
+  },
 };

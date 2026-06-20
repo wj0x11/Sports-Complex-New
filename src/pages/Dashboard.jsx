@@ -11,35 +11,62 @@ import {
   Users,
 } from "lucide-react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
+
+import { getFeaturedSports } from "../services/sports.service";
+import { useBooking } from "../context/BookingContext";
 
 import "../styles/dashboard.css";
 
 function Dashboard() {
   const navigate = useNavigate();
+  const { authUser } = useBooking();
 
-  const [bookings] = useState(() => {
+  const [bookings, setBookings] = useState(() => {
     return JSON.parse(localStorage.getItem("sportsBookings")) || [];
   });
 
-  const [user] = useState(() => {
-    return JSON.parse(localStorage.getItem("user")) || null;
+  const user = authUser || JSON.parse(localStorage.getItem("user")) || null;
+  const displayName = user?.fullName || user?.name || "Member";
+  const userInitial = displayName.charAt(0).toUpperCase();
+
+  useEffect(() => {
+    const refreshBookings = () => {
+      setBookings(JSON.parse(localStorage.getItem("sportsBookings")) || []);
+    };
+
+    window.addEventListener("storage", refreshBookings);
+    window.addEventListener("bookings-updated", refreshBookings);
+
+    return () => {
+      window.removeEventListener("storage", refreshBookings);
+      window.removeEventListener("bookings-updated", refreshBookings);
+    };
+  }, []);
+
+  const userBookings = bookings.filter((booking) => {
+    if (!user?.email) return true;
+    return (
+      booking.userEmail === user.email ||
+      booking.user?.email === user.email
+    );
   });
 
-  const totalBookings = bookings.length;
+  const totalBookings = userBookings.length;
 
-  const totalPayments = bookings.reduce(
+  const totalPayments = userBookings.reduce(
     (total, booking) => total + (booking.totalAmount || 0),
     0,
   );
 
-  const upcomingSessions = bookings.filter(
+  const upcomingSessions = userBookings.filter(
     (booking) => booking.status === "Confirmed",
   ).length;
 
-  const coachingSessions = bookings.filter((booking) => booking.coach).length;
+  const coachingSessions = userBookings.filter((booking) => booking.coach).length;
+  const featuredSports = getFeaturedSports();
 
   return (
     <div className="dashboard-shell">
@@ -54,16 +81,24 @@ function Dashboard() {
               <span>Dashboard</span>
             </div>
 
-            <div className="sidebar-item">
+            <div
+              className="sidebar-item"
+              onClick={() => navigate("/booking-history")}
+              role="button"
+              tabIndex={0}
+            >
               <CalendarDays size={18} />
-
               <span>Bookings</span>
             </div>
 
-            <div className="sidebar-item">
+            <div
+              className="sidebar-item"
+              onClick={() => navigate("/sports")}
+              role="button"
+              tabIndex={0}
+            >
               <Trophy size={18} />
-
-              <span>Sports</span>
+              <span>Sports ({featuredSports.length})</span>
             </div>
 
             <div className="sidebar-item">
@@ -115,7 +150,7 @@ function Dashboard() {
           <div className="topbar-right">
             <button
               className="new-booking-btn"
-              onClick={() => navigate("/sports/badminton")}
+              onClick={() => navigate("/sports")}
             >
               <Plus size={17} />
 
@@ -127,12 +162,10 @@ function Dashboard() {
             </div>
 
             <div className="profile-box">
-              <div className="profile-avatar">
-                {user?.firstName?.charAt(0) || "M"}
-              </div>
+              <div className="profile-avatar">{userInitial}</div>
 
               <div>
-                <h4>{user?.name || "Member"}</h4>
+                <h4>{displayName}</h4>
 
                 <span>{user?.membership || "Standard Member"}</span>
               </div>
@@ -229,8 +262,8 @@ function Dashboard() {
               </thead>
 
               <tbody>
-                {bookings.length > 0 ? (
-                  bookings.map((booking, index) => (
+                {userBookings.length > 0 ? (
+                  userBookings.map((booking, index) => (
                     <tr key={index}>
                       <td>{booking?.sport?.name || "Sports Session"}</td>
 
@@ -269,8 +302,8 @@ function Dashboard() {
               </div>
 
               <div className="activity-list">
-                {bookings.length > 0 ? (
-                  bookings.slice(0, 3).map((booking, index) => (
+                {userBookings.length > 0 ? (
+                  userBookings.slice(0, 3).map((booking, index) => (
                     <div className="activity-item" key={index}>
                       <div className="activity-indicator success-indicator">
                         <CalendarDays size={14} />

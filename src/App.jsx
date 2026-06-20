@@ -121,7 +121,7 @@ function AppLayout() {
               </ProtectedRoute>
             }
           />
-
+          
           <Route
             path="/profile"
             element={

@@ -1,9 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useBooking } from "../context/BookingContext";
 import { apiClient } from "../services/api/client";
 import "../styles/login.css";
-
 
 function Login() {
   const location = useLocation();
@@ -15,9 +14,17 @@ function Login() {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState(
+    location.state?.message || "",
+  );
 
   const from = location.state?.from?.pathname || "/dashboard";
+
+  useEffect(() => {
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+    }
+  }, [location.state?.message]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -26,12 +33,10 @@ function Login() {
     setSuccessMessage("");
 
     try {
-
       const session = await apiClient.login({ email, password });
-      
-      if (session) {
 
-        loginUser(session);
+      if (session) {
+        loginUser({ ...session, email });
         setSuccessMessage("Login successful. Redirecting...");
 
         if (session.role === "admin") {
@@ -39,7 +44,6 @@ function Login() {
           localStorage.setItem("userName", session.fullName);
         }
 
-  
         setTimeout(() => {
           if (session.role === "admin") {
             navigate("/admin-dashboard", { replace: true });
@@ -49,7 +53,8 @@ function Login() {
         }, 800);
       }
     } catch (apiError) {
-      const errorMessage = apiError.response?.data?.message || "Invalid email or password.";
+      const errorMessage =
+        apiError.response?.data?.message || "Invalid email or password.";
       setError(errorMessage);
     } finally {
       setLoading(false);
