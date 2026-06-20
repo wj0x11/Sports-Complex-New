@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
@@ -18,3 +19,6 @@ If you are developing a production application, we recommend using TypeScript wi
 =======
 # Sports-complex-appointment-management-system
 >>>>>>> be14f8994dbffbf8e0c7d1a293005bd8ff8420ee
+=======
+# Sports-Complex
+>>>>>>> be80db7ab6c27ef99f86ea1d9ad0c8740863d57c
