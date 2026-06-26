@@ -115,17 +115,17 @@ function Contact() {
 
               <div className="contact-item">
                 <span className="contact-label">Phone</span>
-                <p>+94 77 123 4567</p>
+                <p>+94 71 492 5338</p>
               </div>
 
               <div className="contact-item">
                 <span className="contact-label">Email</span>
-                <p>support@sportshub.lk</p>
+                <p>battleblast.sportscomplex@yahoo.com</p>
               </div>
 
               <div className="contact-item">
                 <span className="contact-label">Location</span>
-                <p>No. 25, Main Street, Colombo, Sri Lanka</p>
+                <p>3rd Lane, Heraliyawala, Kurunegala, Sri Lanka</p>
               </div>
 
               <div className="contact-item">

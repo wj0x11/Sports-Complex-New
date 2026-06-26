@@ -10,7 +10,7 @@ function About() {
 
         <div className="container">
           <div className="about-hero-content">
-            <span className="about-badge">About SportsHub</span>
+            <span className="about-badge">About Battle Blast</span>
 
             <h1 className="about-hero-title">
               Building Modern Sports Experiences
@@ -39,7 +39,7 @@ function About() {
 
             <div className="story-right">
               <p>
-                SportsHub was built to modernize sports facility management
+                Battle Blast Sports Complex was built to modernize sports facility management
                 through a cleaner and more intelligent digital experience. From
                 reservations to scheduling and training management, the platform
                 focuses on efficiency, accessibility, and professional user
@@ -74,7 +74,7 @@ function About() {
             </div>
 
             <div className="value-card">
-              <h3>Why SportsHub</h3>
+              <h3>Why Battle Blast</h3>
 
               <p>
                 Intelligent booking systems, professional facilities, reliable

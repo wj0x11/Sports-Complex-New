@@ -88,11 +88,11 @@ function AppLayout() {
     "/admin-reports",
   ];
 
-  const hideLayout = dashboardRoutes.includes(location.pathname);
+  const hideFooter = dashboardRoutes.includes(location.pathname);
 
   return (
     <div className="app-layout">
-      {!hideLayout && <Navbar />}
+      <Navbar />
 
       <main className="main-content">
         <Routes>
@@ -272,7 +272,7 @@ function AppLayout() {
         </Routes>
       </main>
 
-      {!hideLayout && <Footer />}
+      {!hideFooter && <Footer />}
     </div>
   );
 }
