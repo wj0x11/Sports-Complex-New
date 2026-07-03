@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useState } from "react";
 
 import {
   CalendarDays,
@@ -33,9 +33,9 @@ function BookingPage() {
     }
   }, [selectedSport, navigate]);
 
-  const bookingId = useMemo(() => {
-    return "BBSC-" + Math.floor(100000 + Math.random() * 900000);
-  }, []);
+  const [bookingId] = useState(() => 
+    "BBSC-" + Math.floor(100000 + Math.random() * 900000)
+  );
 
   const courtFee = bookingDetails?.courtFee || 0;
 

@@ -141,7 +141,7 @@ app.post("/api/bookings", async (req, res) => {
         
         sendEmailNotification(newBooking.userEmail, "Booking Confirmation - Battle Blast", userEmailText);
 
-        // 4. Send Email to Admin
+     
         const adminEmail = process.env.EMAIL_USER || "battleblastsportshub@gmail.com";
         const adminEmailText = `Hello Admin,\n\n` +
             `A new sports reservation has been received.\n\n` +
@@ -201,7 +201,7 @@ app.put("/api/bookings/:id", async (req, res) => {
         });
         await userNotif.save();
 
-        // Send Email update to User
+      
         const userEmailText = `Hi ${booking.user?.fullName || 'Valued Customer'},\n\n` +
             `The status of your booking ${booking.reservationId} has been updated.\n\n` +
             `New Status: ${status}\n` +

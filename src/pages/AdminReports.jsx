@@ -2,28 +2,27 @@ import { useEffect, useMemo, useState } from "react";
 import {
   CalendarDays,
   Wallet,
-  Trophy,
   Users,
-  Download,
   TrendingUp,
   FileSpreadsheet,
   FileText,
 } from "lucide-react";
 import { apiClient } from "../services/api/client";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
+import { jsPDF } from "jspdf"; 
+import autoTable from "jspdf-autotable"; 
 import * as XLSX from "xlsx";
 import "../styles/adminReports.css";
 
 function AdminReports() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filterRange, setFilterRange] = useState("all"); // 'all', 'daily', 'weekly', 'monthly'
+  const [filterRange, setFilterRange] = useState("all"); 
 
   useEffect(() => {
     apiClient.getAdminOverview()
       .then((overview) => {
-        setBookings(overview.bookings);
+        const bookingsList = Array.isArray(overview) ? overview : (overview?.bookings || []);
+        setBookings(bookingsList);
         setLoading(false);
       })
       .catch((err) => {
@@ -94,22 +93,22 @@ function AdminReports() {
   }, [filteredBookings]);
 
   const exportPDF = () => {
-    const doc = new jsPDF();
+    const doc = new jsPDF(); 
 
-    // Title
+
     doc.setFont("helvetica", "bold");
     doc.setFontSize(22);
     doc.setTextColor(30, 41, 59);
     doc.text("Battle Blast Sports Complex", 14, 20);
 
-    // Subtitle
+   
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139);
     doc.text(`Report Generation Date: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, 14, 26);
     doc.text(`Time Filter: ${filterRange.toUpperCase()}`, 14, 31);
 
-    // Summary Box
+
     doc.setDrawColor(226, 232, 240);
     doc.setFillColor(248, 250, 252);
     doc.rect(14, 38, 182, 28, "FD");
@@ -126,10 +125,10 @@ function AdminReports() {
     doc.text(`Active Users: ${totalUsers}`, 100, 52);
     doc.text(`Completed Sessions: ${completedBookings}`, 100, 60);
 
-    // Table headers and data
+
     const tableHeaders = [["User", "Sport", "Facility", "Date", "Status", "Amount"]];
     const tableData = filteredBookings.map((b) => [
-      typeof b.user === "string" ? b.user : (b.user?.fullName || b.userEmail),
+      typeof b.user === "string" ? b.user : (b.user?.fullName || b.userEmail || "Member"),
       b.sport?.name || b.sport || "Sport",
       b.court?.name || b.coach?.name || b.facility || "Facility",
       b.bookingDetails?.bookingDate || b.date || "-",
@@ -137,7 +136,8 @@ function AdminReports() {
       `LKR ${(b.totalAmount || b.amount || 0).toLocaleString()}`
     ]);
 
-    doc.autoTable({
+
+    autoTable(doc, {
       startY: 72,
       head: tableHeaders,
       body: tableData,
@@ -170,7 +170,6 @@ function AdminReports() {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Reservations");
 
-    // Adjust column widths automatically
     const max_width = dataToExport.reduce((w, r) => Math.max(w, Object.keys(r).length), 10);
     worksheet["!cols"] = Array(max_width).fill({ wch: 18 });
 
@@ -184,8 +183,7 @@ function AdminReports() {
           <span className="reports-badge">Battle Blast Reports Center</span>
           <h1>System Reports</h1>
           <p>
-            View reservation statistics, revenue summaries, and facility usage
-            analytics.
+            View reservation statistics, revenue summaries, and facility usage analytics.
           </p>
         </div>
 
@@ -356,7 +354,7 @@ function AdminReports() {
                   </thead>
                   <tbody>
                     {filteredBookings.map((booking) => {
-                      const customerName = typeof booking.user === "string" ? booking.user : (booking.user?.fullName || booking.userEmail);
+                      const customerName = typeof booking.user === "string" ? booking.user : (booking.user?.fullName || booking.userEmail || "Member");
                       const sportName = booking.sport?.name || booking.sport || "Sport";
                       const facilityName = booking.court?.name || booking.coach?.name || booking.facility || "Facility";
                       const amount = booking.totalAmount || booking.amount || 0;
@@ -366,7 +364,7 @@ function AdminReports() {
                           <td>{customerName}</td>
                           <td>{sportName}</td>
                           <td>{facilityName}</td>
-                          <td>{booking.status}</td>
+                          <td>{booking.status || "-"}</td>
                           <td>LKR {amount.toLocaleString()}</td>
                         </tr>
                       );

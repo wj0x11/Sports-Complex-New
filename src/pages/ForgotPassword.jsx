@@ -18,11 +18,10 @@ function ForgotPassword() {
     setDevResetLink("");
 
     try {
-
-      const response = await axios.post("http://localhost:5000/forgot-password", {
+      // ✅ URL එක Backend එකට ගැලපෙන සේ /api/forgot-password ලෙස නිවැරදි කර ඇත
+      const response = await axios.post("http://localhost:5000/api/forgot-password", {
         email: email
       });
-
 
       if (response.status === 200) {
         setMessage(response.data.message || "Password reset link sent! Please check your email.");
@@ -32,14 +31,13 @@ function ForgotPassword() {
         setEmail(""); 
       }
     } catch (err) {
-
       if (err.response && err.response.data && err.response.data.message) {
         setError(err.response.data.message);
       } else {
         setError("Server error. Please check your network connection.");
       }
     } finally {
-      setLoading(false);
+      loading && setLoading(false);
     }
   };
 
@@ -52,7 +50,6 @@ function ForgotPassword() {
           Enter your email address and we will send password reset instructions
           to your account.
         </p>
-
 
         {message && <div className="success-message" style={{color: 'green', marginBottom: '15px', fontSize: '14px', fontWeight: 'bold'}}>{message}</div>}
         {devResetLink && (
