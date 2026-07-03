@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
-
 import { useNavigate } from "react-router-dom";
-
 import { useBooking } from "../context/BookingContext";
-
+import { apiClient } from "../services/api/client";
 import "../styles/payment.css";
 
 function PaymentPage() {
@@ -25,7 +23,6 @@ function PaymentPage() {
   } = useBooking();
 
   const [selectedMethod, setSelectedMethod] = useState("card");
-
   const [processingPayment, setProcessingPayment] = useState(false);
 
   useEffect(() => {
@@ -34,103 +31,73 @@ function PaymentPage() {
     }
   }, [selectedSport, bookingDetails, navigate]);
 
-  const handlePayment = () => {
+  const handlePayment = async () => {
     setProcessingPayment(true);
 
-    const existingBookings =
-      JSON.parse(localStorage.getItem("sportsBookings")) || [];
-
     const currentUser = JSON.parse(localStorage.getItem("user")) || null;
-
     const reservationId = "BBSC-" + Math.floor(100000 + Math.random() * 900000);
 
     const newBooking = {
       id: Date.now(),
-
       reservationId,
-
       user: currentUser,
-
       userEmail: currentUser?.email || "",
-
       sport: selectedSport,
-
       court: selectedCourt,
-
       coach: selectedCoach,
-
       equipment: selectedEquipment,
-
       bookingType,
-
       bookingDetails,
-
       totalAmount,
-
       courtFee,
-
       coachFee,
-
       equipmentTotal,
-
       serviceFee,
-
       paymentMethod: selectedMethod,
-
       paymentStatus: "Paid",
-
       status: "Confirmed",
-
       createdAt: new Date().toISOString(),
     };
 
-    const existingSlotData =
-      JSON.parse(localStorage.getItem("bookedSlots")) || {};
+    try {
+      // Save to MongoDB
+      await apiClient.createBooking(newBooking);
 
-    const bookingDate = bookingDetails.bookingDate;
+      // Keep localStorage synchronized for quick fallback / notifications
+      const existingBookings = JSON.parse(localStorage.getItem("sportsBookings")) || [];
+      const updatedBookings = [...existingBookings, newBooking];
+      localStorage.setItem("sportsBookings", JSON.stringify(updatedBookings));
 
-    const slotOwnerId =
-      selectedSport?.type === "court"
-        ? selectedCourt?.id
-        : selectedCoach?.id;
+      const existingSlotData = JSON.parse(localStorage.getItem("bookedSlots")) || {};
+      const bookingDate = bookingDetails.bookingDate;
+      const slotOwnerId = selectedSport?.type === "court" ? selectedCourt?.id : selectedCoach?.id;
 
-    if (!existingSlotData[bookingDate]) {
-      existingSlotData[bookingDate] = {};
-    }
+      if (!existingSlotData[bookingDate]) {
+        existingSlotData[bookingDate] = {};
+      }
+      if (!existingSlotData[bookingDate][slotOwnerId]) {
+        existingSlotData[bookingDate][slotOwnerId] = [];
+      }
+      if (!existingSlotData[bookingDate][slotOwnerId].includes(bookingDetails.bookingTime)) {
+        existingSlotData[bookingDate][slotOwnerId].push(bookingDetails.bookingTime);
+      }
+      localStorage.setItem("bookedSlots", JSON.stringify(existingSlotData));
+      window.dispatchEvent(new Event("bookings-updated"));
 
-    if (!existingSlotData[bookingDate][slotOwnerId]) {
-      existingSlotData[bookingDate][slotOwnerId] = [];
-    }
-
-    if (
-      !existingSlotData[bookingDate][slotOwnerId].includes(
-        bookingDetails.bookingTime,
-      )
-    ) {
-      existingSlotData[bookingDate][slotOwnerId].push(
-        bookingDetails.bookingTime,
-      );
-    }
-
-    localStorage.setItem("bookedSlots", JSON.stringify(existingSlotData));
-
-    const updatedBookings = [...existingBookings, newBooking];
-
-    localStorage.setItem("sportsBookings", JSON.stringify(updatedBookings));
-    window.dispatchEvent(new Event("bookings-updated"));
-
-    setTimeout(() => {
       setProcessingPayment(false);
-
       navigate("/booking-success", {
         state: {
           booking: newBooking,
         },
       });
-
       clearBooking();
-    }, 1500);
+    } catch (err) {
+      console.error("Error creating booking:", err);
+      alert(err.response?.data?.message || "Failed to make booking. Please try again.");
+      setProcessingPayment(false);
+    }
   };
+
 
   return (
     <div className="payment-page">

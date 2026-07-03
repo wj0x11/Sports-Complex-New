@@ -1,58 +1,57 @@
+import { useEffect, useState } from "react";
+import { apiClient } from "../services/api/client";
 import "../styles/notifications.css";
 
 function Notifications() {
-  const notifications = [
-    {
-      id: 1,
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-      title: "Booking Confirmed",
+  const currentUser = JSON.parse(localStorage.getItem("user")) || null;
+  const isAdmin = localStorage.getItem("isAdmin") === "true";
+  const userEmail = isAdmin ? "admin" : (currentUser?.email || "");
 
-      message:
-        "Your Basketball Court A booking has been confirmed successfully.",
+  const fetchNotifications = () => {
+    if (!userEmail) {
+      setLoading(false);
+      return;
+    }
+    apiClient.getNotifications(userEmail)
+      .then((data) => {
+        setNotifications(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching notifications:", err);
+        setLoading(false);
+      });
+  };
 
-      time: "5 Minutes Ago",
+  useEffect(() => {
+    fetchNotifications();
+  }, [userEmail]);
 
-      status: "New",
-    },
+  const handleMarkAllRead = () => {
+    if (!userEmail) return;
+    apiClient.markNotificationsRead(userEmail)
+      .then(() => {
+        fetchNotifications();
+      })
+      .catch((err) => console.error("Error marking read:", err));
+  };
 
-    {
-      id: 2,
-
-      title: "Payment Successful",
-
-      message: "Your payment of LKR 4,500 has been received successfully.",
-
-      time: "1 Hour Ago",
-
-      status: "Read",
-    },
-
-    {
-      id: 3,
-
-      title: "Coach Session Reminder",
-
-      message:
-        "Your training session with Coach Kasun Perera starts tomorrow at 4PM.",
-
-      time: "3 Hours Ago",
-
-      status: "New",
-    },
-
-    {
-      id: 4,
-
-      title: "Court Maintenance",
-
-      message:
-        "Table Tennis Arena 2 will be unavailable due to scheduled maintenance.",
-
-      time: "Yesterday",
-
-      status: "Read",
-    },
-  ];
+  const formatTime = (isoString) => {
+    if (!isoString) return "";
+    const date = new Date(isoString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins} Minutes Ago`;
+    if (diffHours < 24) return `${diffHours} ${diffHours === 1 ? 'Hour' : 'Hours'} Ago`;
+    return date.toLocaleDateString();
+  };
 
   return (
     <div className="notifications-page">
@@ -67,30 +66,52 @@ function Notifications() {
             </p>
           </div>
 
-          <button className="mark-read-btn">Mark All As Read</button>
+          <button className="mark-read-btn" onClick={handleMarkAllRead}>
+            Mark All As Read
+          </button>
         </div>
 
-        <div className="notifications-list">
-          {notifications.map((notification) => (
-            <div className="notification-card" key={notification.id}>
-              <div className="notification-info">
-                <h2>{notification.title}</h2>
+        {loading ? (
+          <div style={{ color: "#64748b", textAlign: "center", padding: "40px" }}>
+            Loading notifications...
+          </div>
+        ) : notifications.length > 0 ? (
+          <div className="notifications-list">
+            {notifications.map((notification) => (
+              <div className="notification-card" key={notification._id}>
+                <div className="notification-info">
+                  <h2>{notification.title}</h2>
 
-                <p>{notification.message}</p>
+                  <p>{notification.message}</p>
 
-                <span className="notification-time">{notification.time}</span>
+                  <span className="notification-time">
+                    {formatTime(notification.createdAt)}
+                  </span>
+                </div>
+
+                <div
+                  className={`notification-status ${
+                    notification.status === "New" ? "status-new" : "status-read"
+                  }`}
+                >
+                  {notification.status}
+                </div>
               </div>
-
-              <div
-                className={`notification-status ${
-                  notification.status === "New" ? "status-new" : "status-read"
-                }`}
-              >
-                {notification.status}
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{
+            color: "#64748b",
+            textAlign: "center",
+            padding: "60px 40px",
+            background: "rgba(255, 255, 255, 0.03)",
+            borderRadius: "12px",
+            border: "1px dashed rgba(255, 255, 255, 0.08)"
+          }}>
+            <h2>No notifications</h2>
+            <p style={{ marginTop: "10px", fontSize: "14px" }}>You are all caught up!</p>
+          </div>
+        )}
       </div>
     </div>
   );

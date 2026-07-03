@@ -58,6 +58,7 @@ body {
 
 .main-content {
   flex: 1;
+  padding-top: 130px;
 }
 
 .container {
@@ -152,6 +153,10 @@ ul {
 }
 
 @media (max-width: 992px) {
+  .main-content {
+    padding-top: 115px;
+  }
+
   .section-title {
     font-size: 36px;
   }
@@ -162,6 +167,10 @@ ul {
 }
 
 @media (max-width: 768px) {
+  .main-content {
+    padding-top: 105px;
+  }
+
   .container {
     padding: 0 18px;
   }

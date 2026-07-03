@@ -12,47 +12,43 @@ import {
 } from "lucide-react";
 
 import { useEffect, useState } from "react";
-
 import { useNavigate } from "react-router-dom";
-
 import { getFeaturedSports } from "../services/sports.service";
 import { useBooking } from "../context/BookingContext";
-
+import { apiClient } from "../services/api/client";
 import "../styles/dashboard.css";
 
 function Dashboard() {
   const navigate = useNavigate();
   const { authUser } = useBooking();
 
-  const [bookings, setBookings] = useState(() => {
-    return JSON.parse(localStorage.getItem("sportsBookings")) || [];
-  });
+  const [bookings, setBookings] = useState([]);
 
   const user = authUser || JSON.parse(localStorage.getItem("user")) || null;
   const displayName = user?.fullName || user?.name || "Member";
   const userInitial = displayName.charAt(0).toUpperCase();
 
   useEffect(() => {
-    const refreshBookings = () => {
-      setBookings(JSON.parse(localStorage.getItem("sportsBookings")) || []);
+    if (!user?.email) return;
+    const loadBookings = () => {
+      apiClient.getUserBookings(user.email)
+        .then((data) => {
+          setBookings(data);
+        })
+        .catch((err) => {
+          console.error("Error fetching user bookings for dashboard:", err);
+        });
     };
 
-    window.addEventListener("storage", refreshBookings);
-    window.addEventListener("bookings-updated", refreshBookings);
-
+    loadBookings();
+    window.addEventListener("bookings-updated", loadBookings);
     return () => {
-      window.removeEventListener("storage", refreshBookings);
-      window.removeEventListener("bookings-updated", refreshBookings);
+      window.removeEventListener("bookings-updated", loadBookings);
     };
-  }, []);
+  }, [user?.email]);
 
-  const userBookings = bookings.filter((booking) => {
-    if (!user?.email) return true;
-    return (
-      booking.userEmail === user.email ||
-      booking.user?.email === user.email
-    );
-  });
+  const userBookings = bookings;
+
 
   const totalBookings = userBookings.length;
 

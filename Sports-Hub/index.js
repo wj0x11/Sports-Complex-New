@@ -2,9 +2,11 @@ import dns from "node:dns";
 dns.setServers(["8.8.8.8", "1.1.1.1"]); 
 
 import express from "express";
-import mongoose from "mongoose";
 import cors from "cors";
 import Employee from "./Models/emp.js";
+import Booking from "./Models/booking.js";
+import Notification from "./Models/notification.js";
+import { connectDB } from "./config/db.js";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 import process from "process";
@@ -15,35 +17,63 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect(process.env.MONGO_URI)
-    .then(async () => {
-        console.log("MongoDB Connected...");
-    
-        try {
-            const adminEmail = "admin@gmail.com";
-            const adminExists = await Employee.findOne({ email: adminEmail });
-            if (!adminExists) {
-                const defaultAdmin = new Employee({
-                    fullName: "Admin Gayantha",
-                    email: adminEmail,
-                    phone: "0767710134",
-                    password: "Admin@20", 
-                    role: "admin"
-                });
-                await defaultAdmin.save();
-                console.log("==============================================");
-                console.log("Auto-seeded default admin user:");
-                console.log(`Email: ${adminEmail}`);
-                console.log("Password: admin123");
-                console.log("==============================================");
-            } else {
-                console.log("Admin user already exists in database.");
-            }
-        } catch (seedErr) {
-            console.error("Error seeding default admin:", seedErr);
+
+connectDB().then(async () => {
+    try {
+        const adminEmail = "admin@gmail.com";
+        const adminExists = await Employee.findOne({ email: adminEmail });
+        if (!adminExists) {
+            const defaultAdmin = new Employee({
+                fullName: "Admin Gayantha",
+                email: adminEmail,
+                phone: "0767710134",
+                password: "Admin@20", 
+                role: "admin"
+            });
+            await defaultAdmin.save();
+            console.log("==============================================");
+            console.log("Auto-seeded default admin user:");
+            console.log(`Email: ${adminEmail}`);
+            console.log("Password: Admin@20");
+            console.log("==============================================");
+        } else {
+            console.log("Admin user already exists in database.");
         }
-    })
-    .catch(err => console.log("MongoDB connection error:", err));
+    } catch (seedErr) {
+        console.error("Error seeding default admin:", seedErr);
+    }
+});
+
+
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.EMAIL_USER || "battleblastsportshub@gmail.com",
+        pass: process.env.EMAIL_PASS || "ivewebormdizlffw",
+    },
+});
+
+const sendEmailNotification = (to, subject, text) => {
+    const userMail = process.env.EMAIL_USER || "battleblastsportshub@gmail.com";
+    if (!userMail || userMail === "your-email@gmail.com") {
+        console.log(`SMTP user email is not configured. Skipping email to ${to}.`);
+        return;
+    }
+    const mailOptions = {
+        from: userMail,
+        to,
+        subject,
+        text
+    };
+    transporter.sendMail(mailOptions, (err) => {
+        if (err) {
+            console.error(`Error sending email to ${to}:`, err);
+        } else {
+            console.log(`Email notification sent successfully to ${to}`);
+        }
+    });
+};
+
 
 app.get("/", (req, res) => {
     res.send("Sports Hub API Running Successfully");
@@ -51,8 +81,235 @@ app.get("/", (req, res) => {
 
 
 
-app.post("/login", async (req, res) => {
-    console.log("Frontend came with data to /login:", req.body);
+app.post("/api/bookings", async (req, res) => {
+    console.log("POST /api/bookings body:", req.body);
+    try {
+        const bookingData = req.body;
+        
+      
+        if (bookingData.bookingDetails?.bookingDate && bookingData.bookingDetails?.bookingTime) {
+            const facilityId = bookingData.court?.id || bookingData.coach?.id;
+            const query = {
+                "sport.slug": bookingData.sport?.slug,
+                "bookingDetails.bookingDate": bookingData.bookingDetails.bookingDate,
+                "bookingDetails.bookingTime": bookingData.bookingDetails.bookingTime,
+                status: { $ne: "Cancelled" }
+            };
+            if (facilityId) {
+                query.$or = [
+                    { "court.id": Number(facilityId) },
+                    { "coach.id": Number(facilityId) }
+                ];
+            }
+            const doubleBook = await Booking.findOne(query);
+            if (doubleBook) {
+                return res.status(400).json({ message: "This slot is already booked. Please choose another slot." });
+            }
+        }
+
+        const newBooking = new Booking(bookingData);
+        await newBooking.save();
+
+   
+        const userNotif = new Notification({
+            userEmail: newBooking.userEmail,
+            title: "Booking Confirmed",
+            message: `Your booking for ${newBooking.sport?.name} (${newBooking.court?.name || newBooking.coach?.name || 'Session'}) has been confirmed successfully.`
+        });
+        await userNotif.save();
+
+  
+        const adminNotif = new Notification({
+            userEmail: "admin",
+            title: "New Booking Received",
+            message: `${newBooking.user?.fullName || newBooking.userEmail} has booked ${newBooking.sport?.name} on ${newBooking.bookingDetails?.bookingDate}.`
+        });
+        await adminNotif.save();
+
+
+        const userEmailText = `Hi ${newBooking.user?.fullName || 'Valued Customer'},\n\n` +
+            `Your booking at Battle Blast Sports Complex has been confirmed!\n\n` +
+            `Reservation ID: ${newBooking.reservationId}\n` +
+            `Sport: ${newBooking.sport?.name}\n` +
+            `Facility/Coach: ${newBooking.court?.name || newBooking.coach?.name || 'Session'}\n` +
+            `Date: ${newBooking.bookingDetails?.bookingDate}\n` +
+            `Time: ${newBooking.bookingDetails?.bookingTime}\n` +
+            `Total Amount: LKR ${newBooking.totalAmount}\n` +
+            `Payment Status: Paid (${newBooking.paymentMethod})\n\n` +
+            `Thank you for booking with us!\n` +
+            `Battle Blast Sports Complex`;
+        
+        sendEmailNotification(newBooking.userEmail, "Booking Confirmation - Battle Blast", userEmailText);
+
+        // 4. Send Email to Admin
+        const adminEmail = process.env.EMAIL_USER || "battleblastsportshub@gmail.com";
+        const adminEmailText = `Hello Admin,\n\n` +
+            `A new sports reservation has been received.\n\n` +
+            `Reservation ID: ${newBooking.reservationId}\n` +
+            `User: ${newBooking.user?.fullName || 'Unknown'} (${newBooking.userEmail})\n` +
+            `Sport: ${newBooking.sport?.name}\n` +
+            `Facility/Coach: ${newBooking.court?.name || newBooking.coach?.name || 'Session'}\n` +
+            `Date: ${newBooking.bookingDetails?.bookingDate}\n` +
+            `Time: ${newBooking.bookingDetails?.bookingTime}\n` +
+            `Total Amount: LKR ${newBooking.totalAmount}\n\n` +
+            `Manage this booking at http://localhost:5173/admin-dashboard`;
+
+        sendEmailNotification(adminEmail, "New Booking Alert - Battle Blast", adminEmailText);
+
+        res.status(201).json(newBooking);
+    } catch (err) {
+        console.error("Error creating booking:", err);
+        res.status(500).json({ message: "Failed to create booking.", error: err.message });
+    }
+});
+
+app.get("/api/bookings", async (req, res) => {
+    const { email } = req.query;
+    try {
+        let bookings;
+        if (email) {
+            bookings = await Booking.find({ userEmail: email }).sort({ createdAt: -1 });
+        } else {
+            bookings = await Booking.find({}).sort({ createdAt: -1 });
+        }
+        res.status(200).json(bookings);
+    } catch (err) {
+        console.error("Error fetching bookings:", err);
+        res.status(500).json({ message: "Failed to fetch bookings.", error: err.message });
+    }
+});
+
+app.put("/api/bookings/:id", async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    try {
+        const booking = await Booking.findOneAndUpdate(
+            { id: Number(id) },
+            { status },
+            { new: true }
+        );
+
+        if (!booking) {
+            return res.status(404).json({ message: "Booking not found." });
+        }
+
+
+        const userNotif = new Notification({
+            userEmail: booking.userEmail,
+            title: `Booking Status: ${status}`,
+            message: `Your booking ${booking.reservationId} for ${booking.sport?.name} has been updated to ${status}.`
+        });
+        await userNotif.save();
+
+        // Send Email update to User
+        const userEmailText = `Hi ${booking.user?.fullName || 'Valued Customer'},\n\n` +
+            `The status of your booking ${booking.reservationId} has been updated.\n\n` +
+            `New Status: ${status}\n` +
+            `Sport: ${booking.sport?.name}\n` +
+            `Date: ${booking.bookingDetails?.bookingDate}\n` +
+            `Time: ${booking.bookingDetails?.bookingTime}\n\n` +
+            `View your bookings here: http://localhost:5173/booking-history\n\n` +
+            `Thank you,\n` +
+            `Battle Blast Sports Complex`;
+
+        sendEmailNotification(booking.userEmail, `Booking Status Updated - ${status}`, userEmailText);
+
+        res.status(200).json(booking);
+    } catch (err) {
+        console.error("Error updating booking status:", err);
+        res.status(500).json({ message: "Failed to update booking status.", error: err.message });
+    }
+});
+
+app.get("/api/bookings/booked-slots", async (req, res) => {
+    const { sportSlug, date, facilityId } = req.query;
+    if (!sportSlug || !date) {
+        return res.status(400).json({ message: "sportSlug and date are required." });
+    }
+    try {
+        const query = {
+            "sport.slug": sportSlug,
+            "bookingDetails.bookingDate": date,
+            status: { $ne: "Cancelled" }
+        };
+
+        if (facilityId) {
+            query.$or = [
+                { "court.id": Number(facilityId) },
+                { "coach.id": Number(facilityId) }
+            ];
+        }
+
+        const bookings = await Booking.find(query);
+        const bookedSlots = bookings.map(b => b.bookingDetails?.bookingTime).filter(Boolean);
+        
+        res.status(200).json(bookedSlots);
+    } catch (err) {
+        console.error("Error checking booked slots:", err);
+        res.status(500).json({ message: "Failed to query booked slots.", error: err.message });
+    }
+});
+
+
+
+app.get("/api/notifications", async (req, res) => {
+    const { email } = req.query;
+    try {
+        let notifications;
+        if (email) {
+            notifications = await Notification.find({ userEmail: email }).sort({ createdAt: -1 });
+        } else {
+            notifications = await Notification.find({ userEmail: "admin" }).sort({ createdAt: -1 });
+        }
+        res.status(200).json(notifications);
+    } catch (err) {
+        console.error("Error fetching notifications:", err);
+        res.status(500).json({ message: "Failed to fetch notifications.", error: err.message });
+    }
+});
+
+app.put("/api/notifications/mark-read", async (req, res) => {
+    const { email } = req.body;
+    try {
+        const query = email ? { userEmail: email } : { userEmail: "admin" };
+        await Notification.updateMany(query, { status: "Read" });
+        res.status(200).json({ success: true, message: "Notifications marked as read." });
+    } catch (err) {
+        console.error("Error marking notifications read:", err);
+        res.status(500).json({ message: "Failed to update notifications.", error: err.message });
+    }
+});
+
+
+
+app.get("/api/users", async (req, res) => {
+    try {
+        const users = await Employee.find({}).select("-password");
+        res.status(200).json(users);
+    } catch (err) {
+        console.error("Error fetching users:", err);
+        res.status(500).json({ message: "Failed to fetch users.", error: err.message });
+    }
+});
+
+app.delete("/api/users/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+        const deleted = await Employee.findByIdAndDelete(id);
+        if (!deleted) {
+            return res.status(404).json({ message: "User not found." });
+        }
+        res.status(200).json({ message: "User deleted successfully." });
+    } catch (err) {
+        console.error("Error deleting user:", err);
+        res.status(500).json({ message: "Failed to delete user.", error: err.message });
+    }
+});
+
+
+
+app.post("/api/login", async (req, res) => {
+    console.log("Frontend came with data to /api/login:", req.body);
     const { email, password } = req.body || {};
 
     if (!email || !password) {
@@ -70,7 +327,6 @@ app.post("/login", async (req, res) => {
             return res.status(401).json({ message: "Incorrect password." });
         }
 
-       
         return res.status(200).json({ 
             message: "Login successful.", 
             role: user.role, 
@@ -78,15 +334,14 @@ app.post("/login", async (req, res) => {
         });
 
     } catch (err) {
-      
         console.error("Database error during login:", err);
         return res.status(500).json({ message: "An error occurred during login.", error: err.message });
     }
 });
 
 
-app.post("/admin-login", async (req, res) => {
-    console.log("Frontend came with data to /admin-login:", req.body);
+app.post("/api/admin-login", async (req, res) => {
+    console.log("Frontend came with data to /api/admin-login:", req.body);
     const { email, password } = req.body || {};
 
     if (!email || !password) {
@@ -104,7 +359,6 @@ app.post("/admin-login", async (req, res) => {
             return res.status(401).json({ message: "Incorrect password." });
         }
 
-      
         return res.status(200).json({ 
             message: "Login successful.", 
             role: user.role, 
@@ -112,16 +366,13 @@ app.post("/admin-login", async (req, res) => {
         });
 
     } catch (err) {
-  
         console.error("Database error during login:", err);
         return res.status(500).json({ message: "An error occurred during login.", error: err.message });
     }
 });
 
 
-
-
-app.post("/register", async (req, res) => {
+app.post("/api/register", async (req, res) => {
     const { fullName, email, phone, password } = req.body;
 
     if (!fullName || !email || !phone || !password) {
@@ -150,7 +401,7 @@ app.post("/register", async (req, res) => {
     }
 });
 
-app.post("/forgot-password", async (req, res) => {
+app.post("/api/forgot-password", async (req, res) => {
     console.log("Forgot password request for email:", req.body?.email);
     const { email } = req.body || {};
 
@@ -165,10 +416,8 @@ app.post("/forgot-password", async (req, res) => {
             return res.status(404).json({ message: "User with this email does not exist." });
         }
 
-   
         const token = crypto.randomBytes(20).toString("hex");
         
-   
         user.resetPasswordToken = token;
         user.resetPasswordExpires = Date.now() + 3600000;
 
@@ -176,12 +425,10 @@ app.post("/forgot-password", async (req, res) => {
 
         const resetUrl = `http://localhost:5173/reset-password?token=${token}`;
 
-   
         console.log("==============================================");
         console.log(`PASSWORD RESET URL: ${resetUrl}`);
         console.log("==============================================");
 
- 
         const transporter = nodemailer.createTransport({
             service: "gmail",
             auth: {
@@ -200,7 +447,6 @@ app.post("/forgot-password", async (req, res) => {
                   `If you did not request this, please ignore this email and your password will remain unchanged.\n`,
         };
 
-      
         if (!process.env.EMAIL_USER || process.env.EMAIL_USER === "your-email@gmail.com") {
             console.log("SMTP environment variables not configured. Email sending skipped. Reset URL printed above.");
             return res.status(200).json({ 
@@ -228,7 +474,7 @@ app.post("/forgot-password", async (req, res) => {
     }
 });
 
-app.post("/reset-password", async (req, res) => {
+app.post("/api/reset-password", async (req, res) => {
     console.log("Reset password request with token:", req.body?.token);
     const { token, password } = req.body || {};
 
@@ -251,7 +497,6 @@ app.post("/reset-password", async (req, res) => {
             return res.status(400).json({ message: "Password reset token has expired." });
         }
 
-     
         user.password = password;
         user.resetPasswordToken = undefined;
         user.resetPasswordExpires = undefined;

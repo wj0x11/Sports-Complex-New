@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getSportBySlug } from "../services/sports.service";
 import { useBooking } from "../context/BookingContext";
+import { apiClient } from "../services/api/client";
 import "../styles/sportDetails.css";
 
 function SportDetails() {
@@ -26,6 +27,7 @@ function SportDetails() {
     bookingDetails.bookingTime || "",
   );
   const [activeCoach, setActiveCoach] = useState(null);
+  const [bookedSlots, setBookedSlots] = useState([]);
 
   const sport = getSportBySlug(sportSlug);
   const isCoachSport = sport?.type === "coach";
@@ -39,6 +41,25 @@ function SportDetails() {
       .toLowerCase();
   };
 
+  useEffect(() => {
+    if (!sport || !selectedDate) {
+      setBookedSlots([]);
+      return;
+    }
+    const facilityId = activeCoach ? activeCoach.id : selectedCourt?.id;
+    if (!facilityId) {
+      setBookedSlots([]);
+      return;
+    }
+    apiClient.getBookedSlots(sport.slug, selectedDate, facilityId)
+      .then((slots) => {
+        setBookedSlots(slots);
+      })
+      .catch((err) => {
+        console.error("Error fetching booked slots from database:", err);
+      });
+  }, [sport, selectedDate, selectedCourt, activeCoach]);
+
   const availableSlots = useMemo(() => {
     if (!sport || !selectedDate || isCoachSport) return [];
 
@@ -49,14 +70,12 @@ function SportDetails() {
     const allSlots = [...timetable.morning, ...timetable.evening];
     if (!selectedCourt) return [];
 
-    const bookedSlots =
-      sport.bookedSlots?.[selectedDate]?.[selectedCourt.id] || [];
-
     return allSlots.map((slot) => ({
       slot,
       status: bookedSlots.includes(slot) ? "Booked" : "Available",
     }));
-  }, [selectedDate, selectedCourt, sport, isCoachSport]);
+  }, [selectedDate, selectedCourt, sport, isCoachSport, bookedSlots]);
+
 
   if (!sport) {
     return (

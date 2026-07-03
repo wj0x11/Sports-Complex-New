@@ -1,9 +1,8 @@
 import axios from 'axios';
 import { getAdminSportSummaries } from '../sports.service';
 
-
-const API_URL = "http://localhost:5000";
-
+ 
+const API_URL = "http://localhost:5000/api";
 
 const api = axios.create({
   baseURL: API_URL,
@@ -18,30 +17,25 @@ export const apiClient = {
     return response.data;
   },
 
-
   async registerUser(payload) {
     const response = await api.post('/register', payload);
     return response.data;
   },
-
 
   async getSports() {
     const response = await api.get('/sports');
     return response.data;
   },
 
-
   async getSportBySlug(slug) {
     const response = await api.get(`/sports/${slug}`);
     return response.data;
   },
 
-
   async getUserBookings(userEmail) {
     const response = await api.get(`/bookings?email=${userEmail}`);
     return response.data;
   },
-
 
   async createBooking(payload) {
     const response = await api.post('/bookings', payload);
@@ -59,8 +53,10 @@ export const apiClient = {
   },
 
   async getAdminOverview() {
-    const bookings = JSON.parse(localStorage.getItem("sportsBookings")) || [];
-    const sports = getAdminSportSummaries();
+  
+    const response = await api.get('/bookings');
+    const bookings = response.data;
+    const sports = getAdminSportSummaries() || [];
 
     const utilizationMap = {};
     sports.forEach((s) => {
@@ -99,14 +95,42 @@ export const apiClient = {
 
   async updateBookingStatus(bookingId, status) {
     try {
-      const bookings = JSON.parse(localStorage.getItem("sportsBookings")) || [];
-      const updated = bookings.map(b => b.id === bookingId ? { ...b, status } : b);
-      localStorage.setItem("sportsBookings", JSON.stringify(updated));
+      const response = await api.put(`/bookings/${bookingId}`, { status });
       window.dispatchEvent(new Event("bookings-updated"));
-      return { success: true };
+      return response.data;
     } catch (e) {
       console.error(e);
       return { success: false };
     }
   },
+
+  async getBookedSlots(sportSlug, date, facilityId) {
+    const response = await api.get('/bookings/booked-slots', {
+      params: { sportSlug, date, facilityId }
+    });
+    return response.data;
+  },
+
+  async getNotifications(email) {
+    const response = await api.get('/notifications', {
+      params: { email }
+    });
+    return response.data;
+  },
+
+  async markNotificationsRead(email) {
+    const response = await api.put('/notifications/mark-read', { email });
+    return response.data;
+  },
+
+  async getUsers() {
+    const response = await api.get('/users');
+    return response.data;
+  },
+
+  async deleteUser(id) {
+    const response = await api.delete(`/users/${id}`);
+    return response.data;
+  }
 };
+

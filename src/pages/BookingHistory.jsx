@@ -11,32 +11,30 @@ import {
 } from "lucide-react";
 
 import { useEffect, useMemo, useState } from "react";
-
 import { useNavigate } from "react-router-dom";
-
+import { apiClient } from "../services/api/client";
 import "../styles/bookingHistory.css";
 
 function BookingHistory() {
   const navigate = useNavigate();
 
   const [bookings, setBookings] = useState([]);
-
   const [searchTerm, setSearchTerm] = useState("");
-
   const [activeFilter, setActiveFilter] = useState("All");
 
   const currentUser = JSON.parse(localStorage.getItem("user")) || null;
 
   useEffect(() => {
-    const storedBookings =
-      JSON.parse(localStorage.getItem("sportsBookings")) || [];
-
-    const userBookings = storedBookings.filter(
-      (booking) => booking?.user?.email === currentUser?.email,
-    );
-
-    setBookings(userBookings.reverse());
+    if (!currentUser?.email) return;
+    apiClient.getUserBookings(currentUser.email)
+      .then((data) => {
+        setBookings(data);
+      })
+      .catch((err) => {
+        console.error("Error loading user bookings from database:", err);
+      });
   }, [currentUser?.email]);
+
 
   const filteredBookings = useMemo(() => {
     return bookings.filter((booking) => {
