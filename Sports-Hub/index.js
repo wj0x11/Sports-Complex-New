@@ -6,6 +6,7 @@ import cors from "cors";
 import Employee from "./Models/emp.js";
 import Booking from "./Models/booking.js";
 import Notification from "./Models/notification.js";
+import Sport from "./Models/sport.js"; 
 import { connectDB } from "./config/db.js";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
@@ -77,7 +78,83 @@ const sendEmailNotification = (to, subject, text) => {
 
 app.get("/", (req, res) => {
     res.send("Sports Hub API Running Successfully");
-});    
+});     
+
+
+
+app.get("/api/sports", async (req, res) => {
+    try {
+        const sports = await Sport.find({}).sort({ createdAt: -1 });
+        res.status(200).json(sports);
+    } catch (err) {
+        console.error("Error fetching sports:", err);
+        res.status(500).json({ message: "Failed to fetch sports.", error: err.message });
+    }
+});
+
+app.post("/api/sports", async (req, res) => {
+    const { name, description, type, image } = req.body;
+    if (!name || !description) {
+        return res.status(400).json({ message: "Name and description are required." });
+    }
+    try {
+        const slug = name.toLowerCase().replace(/ /g, "-");
+        const newSport = new Sport({
+            name,
+            slug,
+            description,
+            type: type || "court",
+            image: image || "https://images.unsplash.com/photo-1517649763962-0c623066013b",
+            isDisabled: false
+        });
+        await newSport.save();
+        res.status(201).json(newSport);
+    } catch (err) {
+        console.error("Error creating sport:", err);
+        res.status(500).json({ message: "Failed to create sport.", error: err.message });
+    }
+});
+
+
+app.put("/api/sports/:id", async (req, res) => {
+    const { id } = req.params;
+    const { name, description, type, image } = req.body;
+    try {
+        const slug = name ? name.toLowerCase().replace(/ /g, "-") : undefined;
+        const updatedSport = await Sport.findByIdAndUpdate(
+            id,
+            { name, slug, description, type, image },
+            { new: true }
+        );
+        if (!updatedSport) {
+            return res.status(404).json({ message: "Sport not found." });
+        }
+        res.status(200).json(updatedSport);
+    } catch (err) {
+        console.error("Error updating sport:", err);
+        res.status(500).json({ message: "Failed to update sport.", error: err.message });
+    }
+});
+
+
+app.patch("/api/sports/:id/toggle-status", async (req, res) => {
+    const { id } = req.params;
+    const { isDisabled } = req.body;
+    try {
+        const updatedSport = await Sport.findByIdAndUpdate(
+            id,
+            { isDisabled },
+            { new: true }
+        );
+        if (!updatedSport) {
+            return res.status(404).json({ message: "Sport not found." });
+        }
+        res.status(200).json(updatedSport);
+    } catch (err) {
+        console.error("Error updating sport status:", err);
+        res.status(500).json({ message: "Failed to change sport status.", error: err.message });
+    }
+});
 
 
 
@@ -86,7 +163,6 @@ app.post("/api/bookings", async (req, res) => {
     try {
         const bookingData = req.body;
         
-      
         if (bookingData.bookingDetails?.bookingDate && bookingData.bookingDetails?.bookingTime) {
             const facilityId = bookingData.court?.id || bookingData.coach?.id;
             const query = {
@@ -110,7 +186,6 @@ app.post("/api/bookings", async (req, res) => {
         const newBooking = new Booking(bookingData);
         await newBooking.save();
 
-   
         const userNotif = new Notification({
             userEmail: newBooking.userEmail,
             title: "Booking Confirmed",
@@ -118,14 +193,12 @@ app.post("/api/bookings", async (req, res) => {
         });
         await userNotif.save();
 
-  
         const adminNotif = new Notification({
             userEmail: "admin",
             title: "New Booking Received",
             message: `${newBooking.user?.fullName || newBooking.userEmail} has booked ${newBooking.sport?.name} on ${newBooking.bookingDetails?.bookingDate}.`
         });
         await adminNotif.save();
-
 
         const userEmailText = `Hi ${newBooking.user?.fullName || 'Valued Customer'},\n\n` +
             `Your booking at Battle Blast Sports Complex has been confirmed!\n\n` +
@@ -141,7 +214,6 @@ app.post("/api/bookings", async (req, res) => {
         
         sendEmailNotification(newBooking.userEmail, "Booking Confirmation - Battle Blast", userEmailText);
 
-     
         const adminEmail = process.env.EMAIL_USER || "battleblastsportshub@gmail.com";
         const adminEmailText = `Hello Admin,\n\n` +
             `A new sports reservation has been received.\n\n` +
@@ -193,7 +265,6 @@ app.put("/api/bookings/:id", async (req, res) => {
             return res.status(404).json({ message: "Booking not found." });
         }
 
-
         const userNotif = new Notification({
             userEmail: booking.userEmail,
             title: `Booking Status: ${status}`,
@@ -201,7 +272,6 @@ app.put("/api/bookings/:id", async (req, res) => {
         });
         await userNotif.save();
 
-      
         const userEmailText = `Hi ${booking.user?.fullName || 'Valued Customer'},\n\n` +
             `The status of your booking ${booking.reservationId} has been updated.\n\n` +
             `New Status: ${status}\n` +
@@ -252,6 +322,7 @@ app.get("/api/bookings/booked-slots", async (req, res) => {
 
 
 
+
 app.get("/api/notifications", async (req, res) => {
     const { email } = req.query;
     try {
@@ -282,6 +353,7 @@ app.put("/api/notifications/mark-read", async (req, res) => {
 
 
 
+
 app.get("/api/users", async (req, res) => {
     try {
         const users = await Employee.find({}).select("-password");
@@ -305,6 +377,7 @@ app.delete("/api/users/:id", async (req, res) => {
         res.status(500).json({ message: "Failed to delete user.", error: err.message });
     }
 });
+
 
 
 
@@ -488,12 +561,10 @@ app.post("/api/reset-password", async (req, res) => {
         });
 
         if (!user) {
-            console.log(`Reset password failed: No user found with token ${token}`);
             return res.status(400).json({ message: "Password reset token is invalid." });
         }
 
         if (user.resetPasswordExpires < new Date()) {
-            console.log(`Reset password failed: Token has expired. Expiry: ${user.resetPasswordExpires}, Current time: ${new Date()}`);
             return res.status(400).json({ message: "Password reset token has expired." });
         }
 
