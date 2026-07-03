@@ -13,15 +13,18 @@
     ),
     linear-gradient(to bottom right, #f8fafc, #eef2f7);
 
-  padding-top: 100px;
+
+  padding-top: 150px;
 }
 
 .dashboard-sidebar {
   position: sticky;
 
-  top: 100px;
 
-  height: calc(100vh - 118px);
+  top: 150px;
+
+
+  height: calc(100vh - 170px);
 
   margin-left: 18px;
 
@@ -98,23 +101,19 @@
 
 .sidebar-item {
   display: flex;
-
   align-items: center;
-
   gap: 12px;
-
   padding: 14px 16px;
-
   border-radius: 16px;
-
-  color: #cbd5e1;
+  
+ 
+  color: #e2e8f0; 
+  width: 100%;
+  box-sizing: border-box;
 
   cursor: pointer;
-
   font-size: 13px;
-
   font-weight: 700;
-
   transition: 0.3s ease;
 }
 
@@ -765,7 +764,8 @@
 
 @media (max-width: 768px) {
   .dashboard-shell {
-    padding-top: 90px;
+   
+    padding-top: 140px;
   }
 
   .dashboard-main {
