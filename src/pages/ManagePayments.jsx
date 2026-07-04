@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import AdminDashboardLayout from "../components/AdminDashboardLayout";
 import { apiClient } from "../services/api/client";
 import "../styles/managePayments.css";
 
@@ -41,19 +42,10 @@ function ManagePayments() {
   };
 
   return (
-    <div className="manage-payments-page">
-      <div className="container">
-        <div className="manage-payments-header">
-          <div>
-            <h1 className="manage-payments-title">Manage Payments</h1>
-
-            <p className="manage-payments-subtitle">
-              Track customer transactions, payment methods, and revenue
-              analytics.
-            </p>
-          </div>
-        </div>
-
+    <AdminDashboardLayout
+      title="Manage Payments"
+      subtitle="Track customer transactions, payment methods, and revenue analytics."
+    >
         <div className="payments-overview">
           <div className="payment-overview-card">
             <p className="payment-overview-title">Total Revenue</p>
@@ -81,11 +73,9 @@ function ManagePayments() {
         </div>
 
         {loading ? (
-          <div style={{ color: "#64748b", textAlign: "center", padding: "40px" }}>
-            Loading payments database...
-          </div>
+          <div className="ui-loading">Loading payments database...</div>
         ) : bookings.length > 0 ? (
-          <div className="payments-table-container">
+          <div className="payments-table-container ui-card">
             <table className="payments-table">
               <thead>
                 <tr>
@@ -144,18 +134,12 @@ function ManagePayments() {
             </table>
           </div>
         ) : (
-          <div style={{
-            color: "#64748b",
-            textAlign: "center",
-            padding: "40px",
-            background: "rgba(255, 255, 255, 0.03)",
-            borderRadius: "12px"
-          }}>
-            No payment history found.
+          <div className="ui-empty-state">
+            <h2>No payment history</h2>
+            <p>Payment records will appear here once bookings are made.</p>
           </div>
         )}
-      </div>
-    </div>
+    </AdminDashboardLayout>
   );
 }
 

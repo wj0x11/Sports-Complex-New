@@ -73,7 +73,7 @@ function Navbar() {
         <div className="navbar-container">
           <Link to="/" className="logo">
             <img
-              src="logo.png"
+              src="/favicon.svg"
               alt="Battle Blast Sports Complex"
               className="logo-image"
             />
@@ -129,6 +129,12 @@ function Navbar() {
                     </Link>
                   ))}
                 </div>
+              </li>
+
+              <li>
+                <Link to="/events" className={isActive("/events")}>
+                  Events
+                </Link>
               </li>
 
               <li>

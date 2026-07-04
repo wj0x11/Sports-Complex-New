@@ -1,19 +1,11 @@
 .admin-dashboard {
   min-height: 100vh;
-
   display: grid;
-
   grid-template-columns: 240px 1fr;
-
   background:
-    radial-gradient(
-      circle at top right,
-      rgba(132, 204, 22, 0.05),
-      transparent 22%
-    ),
+    radial-gradient(circle at top right, rgba(132, 204, 22, 0.05), transparent 22%),
     linear-gradient(to bottom right, #f8fafc, #eef2f7);
-
-  padding-top: 150px;
+  padding-top: 0;
 }
 
 .admin-sidebar {

@@ -1,0 +1,90 @@
+.payments-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.payments-stat-card {
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.payments-stat-card svg {
+  color: var(--primary-dark);
+}
+
+.payments-stat-card span {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.payments-stat-card h2 {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--dark);
+}
+
+.payments-table-wrap {
+  overflow-x: auto;
+  padding: 0;
+}
+
+.payments-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.payments-table th,
+.payments-table td {
+  padding: 16px 20px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.payments-table th {
+  background: var(--background);
+  font-weight: 700;
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.payments-table tbody tr:hover {
+  background: var(--background);
+}
+
+.payment-amount {
+  font-weight: 700;
+  color: var(--dark);
+}
+
+.payment-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.payment-status-confirmed {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.payment-status-completed {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.payment-status-cancelled {
+  background: #fee2e2;
+  color: #dc2626;
+}

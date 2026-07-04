@@ -7,6 +7,7 @@ import {
   FileSpreadsheet,
   FileText,
 } from "lucide-react";
+import AdminDashboardLayout from "../components/AdminDashboardLayout";
 import { apiClient } from "../services/api/client";
 import { jsPDF } from "jspdf"; 
 import autoTable from "jspdf-autotable"; 
@@ -177,56 +178,31 @@ function AdminReports() {
   };
 
   return (
-    <div className="reports-page">
-      <div className="reports-header">
-        <div>
-          <span className="reports-badge">Battle Blast Reports Center</span>
-          <h1>System Reports</h1>
-          <p>
-            View reservation statistics, revenue summaries, and facility usage analytics.
-          </p>
-        </div>
-
-        <div className="reports-actions" style={{ display: "flex", gap: "10px" }}>
-          <button className="download-report-btn" onClick={exportPDF} style={{ background: "#3b82f6" }}>
-            <FileText size={15} style={{ marginRight: "6px" }} />
+    <AdminDashboardLayout
+      title="System Reports"
+      subtitle="View reservation statistics, revenue summaries, and facility usage analytics."
+    >
+      <div className="reports-toolbar">
+        <div className="reports-actions">
+          <button type="button" className="download-report-btn btn-primary" onClick={exportPDF}>
+            <FileText size={15} />
             Export PDF
           </button>
-          <button className="download-report-btn" onClick={exportExcel} style={{ background: "#10b981" }}>
-            <FileSpreadsheet size={15} style={{ marginRight: "6px" }} />
+          <button type="button" className="download-report-btn btn-secondary" onClick={exportExcel}>
+            <FileSpreadsheet size={15} />
             Export Excel
           </button>
         </div>
       </div>
 
-      <div className="reports-filter-strip" style={{
-        display: "flex",
-        gap: "10px",
-        marginBottom: "25px",
-        background: "rgba(255,255,255,0.02)",
-        padding: "10px",
-        borderRadius: "8px",
-        border: "1px solid rgba(255,255,255,0.06)"
-      }}>
-        <span style={{ color: "#94a3b8", display: "flex", alignItems: "center", fontSize: "14px", marginRight: "10px" }}>
-          Filter Range:
-        </span>
+      <div className="reports-filter-strip">
+        <span className="reports-filter-label">Filter Range:</span>
         {["all", "daily", "weekly", "monthly"].map((range) => (
           <button
             key={range}
+            type="button"
+            className={`reports-filter-btn ${filterRange === range ? "reports-filter-active" : ""}`}
             onClick={() => setFilterRange(range)}
-            style={{
-              background: filterRange === range ? "#3b82f6" : "rgba(255,255,255,0.05)",
-              color: filterRange === range ? "#fff" : "#94a3b8",
-              border: "none",
-              padding: "6px 14px",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontSize: "13px",
-              fontWeight: "500",
-              textTransform: "capitalize",
-              transition: "all 0.2s"
-            }}
           >
             {range === "all" ? "All Time" : range}
           </button>
@@ -234,9 +210,7 @@ function AdminReports() {
       </div>
 
       {loading ? (
-        <div style={{ color: "#64748b", textAlign: "center", padding: "40px" }}>
-          Loading reports data...
-        </div>
+        <div className="ui-loading">Loading reports data...</div>
       ) : (
         <>
           <div className="reports-stats-grid">
@@ -329,7 +303,9 @@ function AdminReports() {
                     </div>
                   ))
                 ) : (
-                  <div style={{ color: "#64748b", fontSize: "14px" }}>No usage analytics available.</div>
+                  <div className="ui-empty-state" style={{ padding: "20px" }}>
+                    <p>No usage analytics available.</p>
+                  </div>
                 )}
               </div>
             </div>
@@ -376,7 +352,7 @@ function AdminReports() {
           </div>
         </>
       )}
-    </div>
+    </AdminDashboardLayout>
   );
 }
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import AdminDashboardLayout from "../components/AdminDashboardLayout";
 import { getAdminSportSummaries } from "../services/sports.service";
 import axios from "axios";
 import "../styles/manageSports.css";
@@ -102,16 +103,12 @@ function ManageSports() {
   };
 
   return (
-    <div className="manage-sports-page">
-      <div className="container">
-        <div className="manage-header">
-          <div>
-            <h1 className="manage-title">Manage Sports</h1>
-            <p className="manage-subtitle">
-              Manage courts, coaches, schedules, and equipment across all sports facilities.
-            </p>
-          </div>
-          <button className="add-sport-btn" onClick={() => setIsAddModalOpen(true)}>Add New Sport</button>
+    <AdminDashboardLayout
+      title="Manage Sports"
+      subtitle="Manage courts, coaches, schedules, and equipment across all sports facilities."
+    >
+        <div className="manage-toolbar">
+          <button type="button" className="add-sport-btn btn-primary" onClick={() => setIsAddModalOpen(true)}>Add New Sport</button>
         </div>
 
         <div className="sports-management-grid">
@@ -165,7 +162,6 @@ function ManageSports() {
             </div>
           ))}
         </div>
-      </div>
 
       {isAddModalOpen && (
         <div className="modal-overlay" style={modalOverlayStyle}>
@@ -237,7 +233,7 @@ function ManageSports() {
           </div>
         </div>
       )}
-    </div>
+    </AdminDashboardLayout>
   );
 }
 

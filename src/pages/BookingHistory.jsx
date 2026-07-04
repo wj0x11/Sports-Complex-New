@@ -12,17 +12,20 @@ import {
 
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import UserDashboardLayout from "../components/UserDashboardLayout";
+import { useBooking } from "../context/BookingContext";
 import { apiClient } from "../services/api/client";
 import "../styles/bookingHistory.css";
 
 function BookingHistory() {
   const navigate = useNavigate();
+  const { authUser } = useBooking();
 
   const [bookings, setBookings] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
 
-  const currentUser = JSON.parse(localStorage.getItem("user")) || null;
+  const currentUser = authUser || JSON.parse(localStorage.getItem("user") || "null");
 
   useEffect(() => {
     if (!currentUser?.email) return;
@@ -67,27 +70,11 @@ function BookingHistory() {
   ).length;
 
   return (
-    <div className="booking-history-page">
-      <section className="booking-history-hero">
-        <div className="history-overlay"></div>
-
-        <div className="container">
-          <div className="history-hero-content">
-            <span className="history-badge">Reservation Management</span>
-
-            <h1 className="booking-history-title">Your Booking History</h1>
-
-            <p className="booking-history-subtitle">
-              Track upcoming reservations, completed training sessions, payment
-              activity, and cancelled bookings from one centralized dashboard.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="history-main-section">
-        <div className="container">
-          <div className="history-topbar">
+    <UserDashboardLayout
+      title="Booking History"
+      subtitle="Track upcoming reservations, completed sessions, payment activity, and cancelled bookings."
+    >
+      <div className="history-topbar">
             <div className="history-search-box">
               <Search size={17} />
 
@@ -145,8 +132,8 @@ function BookingHistory() {
           <div className="history-layout">
             <div className="history-left-column">
               {filteredBookings.length > 0 ? (
-                filteredBookings.map((booking) => (
-                  <div className="history-card" key={booking.id}>
+                filteredBookings.map((booking, index) => (
+                  <div className="history-card" key={booking._id || booking.id || index}>
                     <div className="history-card-glow"></div>
 
                     <div className="history-card-top">
@@ -329,9 +316,7 @@ function BookingHistory() {
               </div>
             </div>
           </div>
-        </div>
-      </section>
-    </div>
+    </UserDashboardLayout>
   );
 }
 

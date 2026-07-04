@@ -10,7 +10,7 @@ function Footer() {
           <div className="footer-brand">
             <div className="footer-logo-wrapper">
               <img
-                src="/logo.png"
+                src="/favicon.svg"
                 alt="Battle Blast Sports Complex"
                 className="footer-logo-image"
               />

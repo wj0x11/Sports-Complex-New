@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import AdminDashboardLayout from "../components/AdminDashboardLayout";
 import { apiClient } from "../services/api/client";
 import { CheckCircle2, ShieldCheck, XCircle } from "lucide-react";
 import "../styles/manageBookings.css";
@@ -50,23 +51,14 @@ function ManageBookings() {
   };
 
   return (
-    <div className="manage-bookings-page">
-      <div className="container">
-        <div className="manage-bookings-header">
-          <div>
-            <h1 className="manage-bookings-title">Manage Bookings</h1>
-            <p className="manage-bookings-subtitle">
-              Monitor court reservations, booking status, and customer activities.
-            </p>
-          </div>
-        </div>
-
+    <AdminDashboardLayout
+      title="Manage Bookings"
+      subtitle="Monitor court reservations, booking status, and customer activities."
+    >
         {loading ? (
-          <div style={{ color: "#64748b", textAlign: "center", padding: "40px" }}>
-            Loading bookings from database...
-          </div>
+          <div className="ui-loading">Loading bookings from database...</div>
         ) : bookings.length > 0 ? (
-          <div className="bookings-table-container">
+          <div className="bookings-table-container ui-card">
             <table className="bookings-table">
               <thead>
                 <tr>
@@ -170,22 +162,12 @@ function ManageBookings() {
             </table>
           </div>
         ) : (
-          <div style={{
-            color: "#64748b",
-            textAlign: "center",
-            padding: "40px",
-            background: "rgba(255, 255, 255, 0.03)",
-            borderRadius: "12px",
-            border: "1px dashed rgba(255, 255, 255, 0.1)"
-          }}>
-            No bookings found in database. <br />
-            <span style={{ fontSize: "13px", color: "#94a3b8" }}>
-              (Try creating a new booking from Member Portal to see it here)
-            </span>
+          <div className="ui-empty-state">
+            <h2>No bookings found</h2>
+            <p>Create a new booking from the Member Portal to see it here.</p>
           </div>
         )}
-      </div>
-    </div>
+    </AdminDashboardLayout>
   );
 }
 

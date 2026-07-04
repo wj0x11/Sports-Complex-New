@@ -33,6 +33,8 @@ import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Notifications from "./pages/Notifications";
 import BookingHistory from "./pages/BookingHistory";
+import UserPayments from "./pages/UserPayments";
+import Events from "./pages/Events";
 
 import BookingForm from "./pages/BookingForm";
 import BookingPage from "./pages/BookingPage";
@@ -76,6 +78,7 @@ function AppLayout() {
     "/settings",
     "/notifications",
     "/booking-history",
+    "/payments",
 
     "/admin-dashboard",
     "/manage-sports",
@@ -89,12 +92,13 @@ function AppLayout() {
   ];
 
   const hideFooter = dashboardRoutes.includes(location.pathname);
+  const hideNavbar = hideFooter;
 
   return (
     <div className="app-layout">
-      <Navbar />
+      {!hideNavbar && <Navbar />}
 
-      <main className="main-content">
+      <main className={`main-content ${hideNavbar ? "main-content-dashboard" : ""}`}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
@@ -102,6 +106,7 @@ function AppLayout() {
           <Route path="/faq" element={<FAQ />} />
           <Route path="/support" element={<Support />} />
           <Route path="/gallery" element={<Gallery />} />
+          <Route path="/events" element={<Events />} />
           <Route path="/our-coaches" element={<OurCoaches />} />
           <Route path="/sports" element={<Sports />} />
           <Route path="/sports/:sportSlug" element={<SportDetails />} />
@@ -145,6 +150,15 @@ function AppLayout() {
             element={
               <ProtectedRoute>
                 <Notifications />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/payments"
+            element={
+              <ProtectedRoute>
+                <UserPayments />
               </ProtectedRoute>
             }
           />

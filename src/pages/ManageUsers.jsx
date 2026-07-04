@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import AdminDashboardLayout from "../components/AdminDashboardLayout";
 import { apiClient } from "../services/api/client";
 import "../styles/manageUsers.css";
 
@@ -35,24 +36,14 @@ function ManageUsers() {
   };
 
   return (
-    <div className="manage-users-page">
-      <div className="container">
-        <div className="manage-users-header">
-          <div>
-            <h1 className="manage-users-title">Manage Users</h1>
-
-            <p className="manage-users-subtitle">
-              Manage customer accounts, admin access, and user information.
-            </p>
-          </div>
-        </div>
-
+    <AdminDashboardLayout
+      title="Manage Users"
+      subtitle="Manage customer accounts, admin access, and user information."
+    >
         {loading ? (
-          <div style={{ color: "#64748b", textAlign: "center", padding: "40px" }}>
-            Loading user accounts from database...
-          </div>
+          <div className="ui-loading">Loading user accounts from database...</div>
         ) : users.length > 0 ? (
-          <div className="users-table-container">
+          <div className="users-table-container ui-card">
             <table className="users-table">
               <thead>
                 <tr>
@@ -103,18 +94,12 @@ function ManageUsers() {
             </table>
           </div>
         ) : (
-          <div style={{
-            color: "#64748b",
-            textAlign: "center",
-            padding: "40px",
-            background: "rgba(255, 255, 255, 0.03)",
-            borderRadius: "12px"
-          }}>
-            No users found in database.
+          <div className="ui-empty-state">
+            <h2>No users found</h2>
+            <p>No user accounts in the database yet.</p>
           </div>
         )}
-      </div>
-    </div>
+    </AdminDashboardLayout>
   );
 }
 
