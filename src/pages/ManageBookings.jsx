@@ -74,7 +74,7 @@ function ManageBookings() {
               </thead>
               <tbody>
                 {bookings.map((booking) => {
-                  // මොන ව්‍යුහයෙන් දත්ත ආවත් බිඳෙන්නේ නැතිව අගයන් ලබා ගැනීම (Fallback Setup)
+                 
                   const resId = booking.reservationId || booking.id || booking._id || "-";
                   const userName = booking.user?.fullName || booking.userEmail || "Customer";
                   const sportName = booking.sport?.name || booking.sport || "-";

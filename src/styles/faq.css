@@ -1,99 +1,125 @@
+/* container එක මැදට ගන්න මම මේක දැම්මා */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
 .faq-page {
   padding: 90px 0px;
-
   background-color: #f5f7fb;
-
   min-height: 100vh;
+  font-family: sans-serif;
 }
 
 .faq-header {
   text-align: center;
-
   margin-bottom: 70px;
 }
 
 .faq-title {
   font-size: 60px;
-
   color: #0a122a;
-
   font-weight: 700;
-
   margin-bottom: 20px;
 }
 
 .faq-subtitle {
   max-width: 750px;
-
   margin: auto;
-
   color: #64748b;
-
   font-size: 18px;
-
   line-height: 1.9;
 }
 
 .faq-list {
   display: flex;
-
   flex-direction: column;
-
   gap: 25px;
 }
 
 .faq-card {
   background-color: white;
-
   border: 1px solid #e2e8f0;
-
   border-radius: 24px;
-
   padding: 35px;
-
   box-shadow: 0px 12px 30px rgba(10, 18, 42, 0.04);
+  transition: all 0.3s ease; /* Card එක active වෙද්දී smooth වෙන්න */
 }
 
 .faq-card h2 {
   color: #0a122a;
-
   font-size: 24px;
-
-  margin-bottom: 16px;
-
+  margin-bottom: 0px; /* Toggle button එක සමග එක පෙලට තියාගන්න 0 කරා */
   font-weight: 700;
 }
 
 .faq-card p {
   color: #64748b;
-
   line-height: 1.9;
-
   font-size: 16px;
 }
+
 .toggle-btn {
   width: 60px;
-
   height: 30px;
-
   background-color: #e2e8f0;
-
   border-radius: 15px;
-
   position: relative;
-
   cursor: pointer;
+  transition: background-color 0.3s ease;
+  flex-shrink: 0; /* Button එක කුඩා වීම වැලැක්වීමට */
 }
+
 .toggle-circle {
   width: 22px;
-
   height: 22px;
-
   background-color: white;
-
   border-radius: 50%;
-
   position: absolute;
-
   top: 4px;
+  left: 4px; /* වම් පැත්තෙන් පටන් ගන්න */
+  transition: left 0.3s ease; /* Circle එක දුවන Animation එක */
+}
+
+
+/* -------------------------------------------------- */
+/*  --- Added for Accordion & Toggle Animation ---  */
+/* -------------------------------------------------- */
+
+/* ප්‍රශ්නය සහ බටන් එක එක පෙලට (Flex) තියාගන්න */
+.faq-question-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* මුලින්ම පිළිතුර හංගලා තියාගන්න */
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, margin-top 0.3s ease;
+}
+
+/* Card එක Active වුණාම Answer එක පෙන්වන්න */
+.faq-card.active .faq-answer {
+  max-height: 200px; /* text එකේ ප්‍රමාණය අනුව වෙනස් වේ */
+  margin-top: 16px;
+}
+
+/* Active වුණාම Card එකේ Border එක පාට කරන්න (Optional) */
+.faq-card.active {
+  border-color: #3b82f6; 
+}
+
+/* Active වුණාම Toggle Button එක නිල් පාට කරන්න */
+.toggle-btn.btn-active {
+  background-color: #3b82f6; 
+}
+
+/* Active වුණාම Circle එක දකුණු පැත්තට ගන්න */
+.toggle-btn.btn-active .toggle-circle {
+  left: 34px; 
 }

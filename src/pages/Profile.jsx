@@ -10,39 +10,35 @@ function Profile() {
   const user = authUser || JSON.parse(localStorage.getItem("user") || "null");
   const featuredSports = getFeaturedSports();
 
-  const [bookings, setBookings] = useState([]);
-  const [saved, setSaved] = useState(false);
-  const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    preferredSport: "",
-    membership: "Standard",
-  });
-
-  useEffect(() => {
-    if (!user) return;
-
-    const fullName = user.fullName || user.name || "";
+  const createFormState = (userData) => {
+    const fullName = userData?.fullName || userData?.name || "";
     const nameParts = fullName.split(" ");
 
-    setForm({
-      firstName: user.firstName || nameParts[0] || "",
-      lastName: user.lastName || nameParts.slice(1).join(" ") || "",
-      email: user.email || "",
-      phone: user.phone || user.phoneNumber || "",
-      preferredSport: user.preferredSport || featuredSports[0]?.name || "",
-      membership: user.membership || "Standard",
-    });
+    return {
+      firstName: userData?.firstName || nameParts[0] || "",
+      lastName: userData?.lastName || nameParts.slice(1).join(" ") || "",
+      email: userData?.email || "",
+      phone: userData?.phone || userData?.phoneNumber || "",
+      preferredSport:
+        userData?.preferredSport || featuredSports[0]?.name || "",
+      membership: userData?.membership || "Standard",
+    };
+  };
 
-    if (user.email) {
-      apiClient
-        .getUserBookings(user.email)
-        .then(setBookings)
-        .catch((err) => console.error("Error loading profile bookings:", err));
-    }
-  }, [user]);
+  const [bookings, setBookings] = useState([]);
+  const [saved, setSaved] = useState(false);
+  const [form, setForm] = useState(() => createFormState(user));
+
+  useEffect(() => {
+    if (!user?.email) return;
+
+    apiClient
+      .getUserBookings(user.email)
+      .then(setBookings)
+      .catch((err) =>
+        console.error("Error loading profile bookings:", err),
+      );
+  }, [user?.email]);
 
   const uniqueSports = new Set(
     bookings.map((b) => b?.sport?.name).filter(Boolean),

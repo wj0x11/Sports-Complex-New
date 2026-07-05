@@ -9,11 +9,10 @@ function UserPayments() {
   const { authUser } = useBooking();
   const user = authUser || JSON.parse(localStorage.getItem("user") || "null");
   const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(Boolean(user?.email));
 
   useEffect(() => {
     if (!user?.email) {
-      setLoading(false);
       return;
     }
 
