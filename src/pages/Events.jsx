@@ -34,7 +34,7 @@ const EVENTS = [
     location: "Training Center",
     description:
       "A week-long intensive coaching camp for junior players aged 10–16. Limited seats available.",
-    image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800",
+    image: "",
     featured: false,
     spots: 20,
   },
