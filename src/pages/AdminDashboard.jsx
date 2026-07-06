@@ -17,21 +17,32 @@ function AdminDashboard() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [bookings, setBookings] = useState([]);
-  const [sportsCount, setSportsCount] = useState(0);
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalBookings: 0,
+    totalRevenue: 0,
+    todayBookings: 0,
+    upcomingTournaments: 0,
+    equipmentCount: 0
+  });
   const [utilization, setUtilization] = useState([]);
 
   useEffect(() => {
-    const loadOverview = () => {
-      apiClient.getAdminOverview().then((overview) => {
+    const loadData = async () => {
+      try {
+        const overview = await apiClient.getAdminOverview();
+        const dashboardStats = await apiClient.getDashboardStats();
         setBookings(overview.bookings);
-        setSportsCount(overview.sports.length);
+        setStats(dashboardStats);
         setUtilization(overview.utilization);
-      });
+      } catch (error) {
+        console.error("Error loading dashboard data:", error);
+      }
     };
 
-    loadOverview();
-    window.addEventListener("bookings-updated", loadOverview);
-    return () => window.removeEventListener("bookings-updated", loadOverview);
+    loadData();
+    window.addEventListener("bookings-updated", loadData);
+    return () => window.removeEventListener("bookings-updated", loadData);
   }, []);
 
   const filteredBookings = useMemo(() => {
@@ -40,26 +51,15 @@ function AdminDashboard() {
       const userName =
         typeof booking.user === "string"
           ? booking.user
-          : booking.user?.firstName || "Unknown User";
+          : booking.user?.firstName || booking.user?.fullName || "Unknown User";
 
       return (
         userName.toLowerCase().includes(value) ||
-        String(booking.sport || "").toLowerCase().includes(value) ||
-        String(booking.facility || "").toLowerCase().includes(value)
+        String(booking.sport?.name || booking.sport || "").toLowerCase().includes(value) ||
+        String(booking.facility || booking.court?.name || booking.coach?.name || "").toLowerCase().includes(value)
       );
     });
   }, [bookings, searchTerm]);
-
-  const totalRevenue = bookings.reduce(
-    (total, booking) => total + (booking.amount || booking.totalAmount || 0),
-    0,
-  );
-
-  const activeUsers = new Set(
-    bookings.map((b) =>
-      typeof b.user === "string" ? b.user : b.user?.firstName || "Unknown User",
-    ),
-  ).size;
 
   const updateBookingStatus = (bookingId, status) => {
     setBookings((prev) =>
@@ -94,8 +94,8 @@ function AdminDashboard() {
             <CalendarDays size={16} />
           </div>
           <span>Total Reservations</span>
-          <h2>{bookings.length}</h2>
-          <p>Active bookings</p>
+          <h2>{stats.totalBookings}</h2>
+          <p>Today: {stats.todayBookings}</p>
         </div>
 
         <div className="stats-card">
@@ -103,7 +103,7 @@ function AdminDashboard() {
             <Wallet size={16} />
           </div>
           <span>Total Revenue</span>
-          <h2>LKR {totalRevenue.toLocaleString()}</h2>
+          <h2>LKR {stats.totalRevenue.toLocaleString()}</h2>
           <p>All-time earnings</p>
         </div>
 
@@ -111,18 +111,18 @@ function AdminDashboard() {
           <div className="stats-icon">
             <Users size={16} />
           </div>
-          <span>Members</span>
-          <h2>{activeUsers}</h2>
-          <p>Registered users</p>
+          <span>Registered Users</span>
+          <h2>{stats.totalUsers}</h2>
+          <p>Active members</p>
         </div>
 
         <div className="stats-card">
           <div className="stats-icon">
             <Activity size={16} />
           </div>
-          <span>Total Sports</span>
-          <h2>{sportsCount}</h2>
-          <p>Active sports facilities</p>
+          <span>Equipment</span>
+          <h2>{stats.equipmentCount}</h2>
+          <p>Available for rent</p>
         </div>
       </div>
 
@@ -155,7 +155,7 @@ function AdminDashboard() {
                   <td>
                     {typeof booking.user === "string"
                       ? booking.user
-                      : booking.user?.firstName || "Unknown User"}
+                      : booking.user?.fullName || booking.user?.firstName || "Unknown User"}
                   </td>
                   <td>{booking.sport?.name || booking.sport || "Sports"}</td>
                   <td>

@@ -2,63 +2,42 @@ import {
   LayoutDashboard,
   CalendarDays,
   Users,
-  Wallet,
-  Trophy,
-  Bell,
+  FileText,
   Settings,
   Search,
-  FileText,
-  MapPin,
-  UserCheck,
-  Package,
-  MessageSquare,
-  Award,
   Clock,
-  BadgePercent,
-  Send,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useBooking } from "../context/BookingContext";
 import "../styles/dashboard-layout.css";
 
 const NAV_ITEMS = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/admin-dashboard" },
-  { id: "users", label: "Members", icon: Users, path: "/manage-users" },
-  { id: "memberships", label: "Memberships", icon: BadgePercent, path: "/manage-memberships" },
-  { id: "sports", label: "Sports", icon: Trophy, path: "/manage-sports" },
-  { id: "courts", label: "Courts", icon: MapPin, path: "/manage-courts" },
-  { id: "coaches", label: "Coaches", icon: UserCheck, path: "/manage-coaches" },
-  { id: "equipment", label: "Equipment", icon: Package, path: "/manage-equipment" },
-  { id: "tournaments", label: "Tournaments", icon: Award, path: "/manage-tournaments" },
-  { id: "training", label: "Training Sessions", icon: Clock, path: "/manage-training-sessions" },
-  { id: "bookings", label: "Reservations", icon: CalendarDays, path: "/manage-bookings" },
-  { id: "feedback", label: "Feedback", icon: MessageSquare, path: "/manage-feedback" },
-  { id: "payments", label: "Payments", icon: Wallet, path: "/manage-payments" },
-  { id: "reports", label: "Reports", icon: FileText, path: "/admin-reports" },
-  { id: "send-notifications", label: "Send Notifications", icon: Send, path: "/send-notifications" },
-  { id: "notifications", label: "Notifications", icon: Bell, path: "/notifications" },
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/coach-dashboard" },
+  { id: "schedule", label: "Training Schedule", icon: CalendarDays, path: "/coach-schedule" },
+  { id: "players", label: "Assigned Players", icon: Users, path: "/coach-players" },
+  { id: "notes", label: "Training Notes", icon: FileText, path: "/coach-notes" },
   { id: "settings", label: "Settings", icon: Settings, path: "/settings" },
 ];
 
-function AdminDashboardLayout({ children, title, subtitle }) {
+function CoachDashboardLayout({ children, title, subtitle }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { authUser } = useBooking();
 
-  const displayName = authUser?.fullName || authUser?.name || "Administrator";
+  const displayName = authUser?.fullName || authUser?.name || "Coach";
   const userInitial = displayName.charAt(0).toUpperCase();
 
   const isActive = (path) => location.pathname === path;
 
   return (
-    <div className="dash-layout admin-dash-layout">
+    <div className="dash-layout">
       <aside className="dash-sidebar">
         <div>
           <div className="dash-sidebar-logo">
             Battle<span>Blast</span>
           </div>
 
-          <nav className="dash-sidebar-menu" aria-label="Admin dashboard navigation">
+          <nav className="dash-sidebar-menu" aria-label="Coach dashboard navigation">
             {NAV_ITEMS.map(({ id, label, icon: Icon, path }) => (
               <button
                 key={id}
@@ -74,9 +53,9 @@ function AdminDashboardLayout({ children, title, subtitle }) {
         </div>
 
         <div className="dash-sidebar-card">
-          <span>SYSTEM ACTIVE</span>
-          <h4>Operations Stable</h4>
-          <p>All reservations and payment systems are functioning normally.</p>
+          <span>TRAINING ACTIVE</span>
+          <h4>Session Ready</h4>
+          <p>Your training schedule is up to date and players are ready.</p>
         </div>
       </aside>
 
@@ -84,7 +63,7 @@ function AdminDashboardLayout({ children, title, subtitle }) {
         <div className="dash-topbar">
           <div className="dash-search">
             <Search size={16} />
-            <input type="text" placeholder="Search admin panel" />
+            <input type="text" placeholder="Search coach panel" />
           </div>
 
           <div className="dash-topbar-actions">
@@ -92,7 +71,7 @@ function AdminDashboardLayout({ children, title, subtitle }) {
               <div className="dash-avatar">{userInitial}</div>
               <div>
                 <h4>{displayName}</h4>
-                <span>Administrator</span>
+                <span>Coach</span>
               </div>
             </button>
           </div>
@@ -111,4 +90,4 @@ function AdminDashboardLayout({ children, title, subtitle }) {
   );
 }
 
-export default AdminDashboardLayout;
+export default CoachDashboardLayout;

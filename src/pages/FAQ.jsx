@@ -2,11 +2,11 @@ import { useState } from "react";
 import "../styles/faq.css";
 
 function FAQ() {
-  // කුමන ප්‍රශ්නයද විවෘතව පවතින්නේ කියා බලාගැනීමට (State)
+
   const [activeIndex, setActiveIndex] = useState(null);
 
   const toggleFAQ = (index) => {
-    // දැනට විවෘත එකම ආයෙත් Click කරොත් වහන්න (null කරන්න), නැත්නම් අලුත් එක විවෘත කරන්න
+
     setActiveIndex(activeIndex === index ? null : index);
   };
 

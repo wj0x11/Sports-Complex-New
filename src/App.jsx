@@ -50,6 +50,11 @@ import ManageBookings from "./pages/ManageBookings";
 import ManagePayments from "./pages/ManagePayments";
 import ManageUsers from "./pages/ManageUsers";
 import AdminReports from "./pages/AdminReports";
+import ManageTournaments from "./pages/ManageTournaments";
+import ManageFeedback from "./pages/ManageFeedback";
+import ManageTrainingSessions from "./pages/ManageTrainingSessions";
+import ManageMemberships from "./pages/ManageMemberships";
+import SendNotifications from "./pages/SendNotifications";
 import { useBooking } from "./context/BookingContext";
 
 const ProtectedRoute = ({ children }) => {
@@ -89,6 +94,11 @@ function AppLayout() {
     "/manage-payments",
     "/manage-users",
     "/admin-reports",
+    "/manage-tournaments",
+    "/manage-feedback",
+    "/manage-training-sessions",
+    "/manage-memberships",
+    "/send-notifications",
   ];
 
   const hideFooter = dashboardRoutes.includes(location.pathname);
@@ -278,6 +288,46 @@ function AppLayout() {
             element={
               <AdminProtectedRoute>
                 <AdminReports />
+              </AdminProtectedRoute>
+            }
+          />
+          <Route
+            path="/manage-tournaments"
+            element={
+              <AdminProtectedRoute>
+                <ManageTournaments />
+              </AdminProtectedRoute>
+            }
+          />
+          <Route
+            path="/manage-feedback"
+            element={
+              <AdminProtectedRoute>
+                <ManageFeedback />
+              </AdminProtectedRoute>
+            }
+          />
+          <Route
+            path="/manage-training-sessions"
+            element={
+              <AdminProtectedRoute>
+                <ManageTrainingSessions />
+              </AdminProtectedRoute>
+            }
+          />
+          <Route
+            path="/manage-memberships"
+            element={
+              <AdminProtectedRoute>
+                <ManageMemberships />
+              </AdminProtectedRoute>
+            }
+          />
+          <Route
+            path="/send-notifications"
+            element={
+              <AdminProtectedRoute>
+                <SendNotifications />
               </AdminProtectedRoute>
             }
           />
