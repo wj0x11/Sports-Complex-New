@@ -13,10 +13,6 @@ function ManageFeedback() {
     isVisible: true
   });
 
-  useEffect(() => {
-    loadFeedbacks();
-  }, []);
-
   const loadFeedbacks = async () => {
     try {
       const data = await apiClient.getFeedback();
@@ -25,6 +21,14 @@ function ManageFeedback() {
       console.error("Error loading feedbacks:", error);
     }
   };
+
+  useEffect(() => {
+    const initializeFeedbacks = async () => {
+      await loadFeedbacks();
+    };
+
+    initializeFeedbacks();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

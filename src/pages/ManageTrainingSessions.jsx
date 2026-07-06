@@ -21,11 +21,6 @@ function ManageTrainingSessions() {
     notes: ""
   });
 
-  useEffect(() => {
-    loadSessions();
-    loadCoaches();
-  }, []);
-
   const loadSessions = async () => {
     try {
       const data = await apiClient.getTrainingSessions();
@@ -43,6 +38,15 @@ function ManageTrainingSessions() {
       console.error("Error loading coaches:", error);
     }
   };
+
+  useEffect(() => {
+    const initialize = async () => {
+      await loadSessions();
+      await loadCoaches();
+    };
+
+    initialize();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

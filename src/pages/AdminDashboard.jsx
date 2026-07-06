@@ -15,34 +15,23 @@ import "../styles/adminDashboard.css";
 
 function AdminDashboard() {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm] = useState("");
   const [bookings, setBookings] = useState([]);
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    totalBookings: 0,
-    totalRevenue: 0,
-    todayBookings: 0,
-    upcomingTournaments: 0,
-    equipmentCount: 0
-  });
+  const [sportsCount, setSportsCount] = useState(0);
   const [utilization, setUtilization] = useState([]);
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const overview = await apiClient.getAdminOverview();
-        const dashboardStats = await apiClient.getDashboardStats();
+    const loadOverview = () => {
+      apiClient.getAdminOverview().then((overview) => {
         setBookings(overview.bookings);
-        setStats(dashboardStats);
+        setSportsCount(overview.sports.length);
         setUtilization(overview.utilization);
-      } catch (error) {
-        console.error("Error loading dashboard data:", error);
-      }
+      });
     };
 
-    loadData();
-    window.addEventListener("bookings-updated", loadData);
-    return () => window.removeEventListener("bookings-updated", loadData);
+    loadOverview();
+    window.addEventListener("bookings-updated", loadOverview);
+    return () => window.removeEventListener("bookings-updated", loadOverview);
   }, []);
 
   const filteredBookings = useMemo(() => {
@@ -51,15 +40,27 @@ function AdminDashboard() {
       const userName =
         typeof booking.user === "string"
           ? booking.user
-          : booking.user?.firstName || booking.user?.fullName || "Unknown User";
+          : booking.user?.firstName || "Unknown User";
 
       return (
         userName.toLowerCase().includes(value) ||
-        String(booking.sport?.name || booking.sport || "").toLowerCase().includes(value) ||
-        String(booking.facility || booking.court?.name || booking.coach?.name || "").toLowerCase().includes(value)
+        String(booking.sport || "").toLowerCase().includes(value) ||
+        String(booking.facility || "").toLowerCase().includes(value)
       );
     });
   }, [bookings, searchTerm]);
+
+  // Calculations
+  const totalRevenue = bookings.reduce(
+    (total, booking) => total + (booking.amount || booking.totalAmount || 0),
+    0,
+  );
+
+  const activeUsers = new Set(
+    bookings.map((b) =>
+      typeof b.user === "string" ? b.user : b.user?.firstName || "Unknown User",
+    ),
+  ).size;
 
   const updateBookingStatus = (bookingId, status) => {
     setBookings((prev) =>
@@ -80,6 +81,7 @@ function AdminDashboard() {
 
   return (
     <AdminDashboardLayout>
+      {/* Welcome Section */}
       <div className="dashboard-welcome">
         <div>
           <h1>Welcome Back</h1>
@@ -88,14 +90,15 @@ function AdminDashboard() {
         <div className="welcome-date">{today}</div>
       </div>
 
+      {/* Stats Cards Grid */}
       <div className="stats-grid">
         <div className="stats-card">
           <div className="stats-icon">
             <CalendarDays size={16} />
           </div>
           <span>Total Reservations</span>
-          <h2>{stats.totalBookings}</h2>
-          <p>Today: {stats.todayBookings}</p>
+          <h2>{bookings.length}</h2>
+          <p>Active bookings</p>
         </div>
 
         <div className="stats-card">
@@ -103,7 +106,7 @@ function AdminDashboard() {
             <Wallet size={16} />
           </div>
           <span>Total Revenue</span>
-          <h2>LKR {stats.totalRevenue.toLocaleString()}</h2>
+          <h2>LKR {totalRevenue.toLocaleString()}</h2>
           <p>All-time earnings</p>
         </div>
 
@@ -111,22 +114,24 @@ function AdminDashboard() {
           <div className="stats-icon">
             <Users size={16} />
           </div>
-          <span>Registered Users</span>
-          <h2>{stats.totalUsers}</h2>
-          <p>Active members</p>
+          <span>Members</span>
+          <h2>{activeUsers}</h2>
+          <p>Registered users</p>
         </div>
 
         <div className="stats-card">
           <div className="stats-icon">
             <Activity size={16} />
           </div>
-          <span>Equipment</span>
-          <h2>{stats.equipmentCount}</h2>
-          <p>Available for rent</p>
+          <span>Total Sports</span>
+          <h2>{sportsCount}</h2>
+          <p>Active sports facilities</p>
         </div>
       </div>
 
+      {/* Main Grid Content */}
       <div className="dashboard-grid">
+        {/* Table Card */}
         <div className="dashboard-card">
           <div className="card-header">
             <div>
@@ -150,16 +155,16 @@ function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {filteredBookings.slice(0, 8).map((booking) => (
-                <tr key={booking.id || booking._id}>
+              {filteredBookings.slice(0, 8).map((booking, index) => (
+                <tr key={booking.id || booking._id || index}>
                   <td>
                     {typeof booking.user === "string"
                       ? booking.user
-                      : booking.user?.fullName || booking.user?.firstName || "Unknown User"}
+                      : booking.user?.firstName || "Unknown User"}
                   </td>
                   <td>{booking.sport?.name || booking.sport || "Sports"}</td>
                   <td>
-                    {booking.facility || booking.court?.name || booking.coach?.name}
+                    {booking.facility || booking.court?.name || booking.coach?.name || "-"}
                   </td>
                   <td>
                     {booking.date || booking.bookingDetails?.bookingDate || "-"}
@@ -174,7 +179,7 @@ function AdminDashboard() {
                             : "pending-status"
                       }`}
                     >
-                      {booking.status}
+                      {booking.status || "Pending"}
                     </span>
                   </td>
                   <td>
@@ -217,12 +222,13 @@ function AdminDashboard() {
           </table>
         </div>
 
+        {/* Live Analytics Side Card */}
         <div className="side-card">
           <span className="card-label">LIVE ANALYTICS</span>
           <h2>Performance</h2>
           <div className="analytics-list">
             {utilization.map((item, index) => (
-              <div key={item.slug || item.sport}>
+              <div key={item.slug || item.sport || index}>
                 <div className="analytics-row">
                   <span>{item.sport} Usage</span>
                   <strong>{item.usageCount || 0}</strong>
@@ -253,3 +259,5 @@ function AdminDashboard() {
 }
 
 export default AdminDashboard;
+
+

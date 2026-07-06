@@ -42,22 +42,44 @@ function SportDetails() {
   };
 
   useEffect(() => {
+    let isMounted = true;
+
+    const clearBookedSlots = () => {
+      Promise.resolve().then(() => {
+        if (isMounted) {
+          setBookedSlots([]);
+        }
+      });
+    };
+
     if (!sport || !selectedDate) {
-      setBookedSlots([]);
-      return;
+      clearBookedSlots();
+      return () => {
+        isMounted = false;
+      };
     }
+
     const facilityId = activeCoach ? activeCoach.id : selectedCourt?.id;
     if (!facilityId) {
-      setBookedSlots([]);
-      return;
+      clearBookedSlots();
+      return () => {
+        isMounted = false;
+      };
     }
+
     apiClient.getBookedSlots(sport.slug, selectedDate, facilityId)
       .then((slots) => {
-        setBookedSlots(slots);
+        if (isMounted) {
+          setBookedSlots(slots);
+        }
       })
       .catch((err) => {
         console.error("Error fetching booked slots from database:", err);
       });
+
+    return () => {
+      isMounted = false;
+    };
   }, [sport, selectedDate, selectedCourt, activeCoach]);
 
   const availableSlots = useMemo(() => {

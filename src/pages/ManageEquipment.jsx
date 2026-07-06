@@ -24,14 +24,14 @@ function ManageEquipment() {
     loadEquipment();
   }, []);
 
-  const loadEquipment = async () => {
+  async function loadEquipment() {
     try {
       const data = await apiClient.getEquipment();
       setEquipment(data);
     } catch (error) {
       console.error("Error loading equipment:", error);
     }
-  };
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();

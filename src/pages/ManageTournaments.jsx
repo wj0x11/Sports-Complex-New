@@ -23,10 +23,6 @@ function ManageTournaments() {
     status: "Upcoming"
   });
 
-  useEffect(() => {
-    loadTournaments();
-  }, []);
-
   const loadTournaments = async () => {
     try {
       const data = await apiClient.getTournaments();
@@ -35,6 +31,19 @@ function ManageTournaments() {
       console.error("Error loading tournaments:", error);
     }
   };
+
+  useEffect(() => {
+    const fetchInitialTournaments = async () => {
+      try {
+        const data = await apiClient.getTournaments();
+        setTournaments(data);
+      } catch (error) {
+        console.error("Error loading tournaments:", error);
+      }
+    };
+
+    fetchInitialTournaments();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

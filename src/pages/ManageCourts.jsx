@@ -21,10 +21,6 @@ function ManageCourts() {
     isUnderMaintenance: false
   });
 
-  useEffect(() => {
-    loadCourts();
-  }, []);
-
   const loadCourts = async () => {
     try {
       const data = await apiClient.getCourts();
@@ -33,6 +29,19 @@ function ManageCourts() {
       console.error("Error loading courts:", error);
     }
   };
+
+  useEffect(() => {
+    const initializeCourts = async () => {
+      try {
+        const data = await apiClient.getCourts();
+        setCourts(data);
+      } catch (error) {
+        console.error("Error loading courts:", error);
+      }
+    };
+
+    initializeCourts();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

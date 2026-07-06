@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Bell, CheckCircle2, CalendarDays, Wallet, Megaphone } from "lucide-react";
 import UserDashboardLayout from "../components/UserDashboardLayout";
 import AdminDashboardLayout from "../components/AdminDashboardLayout";
@@ -20,16 +20,13 @@ function Notifications() {
   const isAdmin = authUser?.role === "admin";
   const Layout = isAdmin ? AdminDashboardLayout : UserDashboardLayout;
   const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
-
   const user = authUser || JSON.parse(localStorage.getItem("user") || "null");
   const userEmail = isAdmin ? "admin" : user?.email || "";
+  const [loading, setLoading] = useState(Boolean(userEmail));
 
-  const fetchNotifications = () => {
-    if (!userEmail) {
-      setLoading(false);
-      return;
-    }
+  const fetchNotifications = useCallback(() => {
+    if (!userEmail) return;
+    setLoading(true);
     apiClient
       .getNotifications(userEmail)
       .then((data) => {
@@ -40,11 +37,13 @@ function Notifications() {
         console.error("Error fetching notifications:", err);
         setLoading(false);
       });
-  };
+  }, [userEmail]);
 
   useEffect(() => {
-    fetchNotifications();
-  }, [userEmail]);
+    if (!userEmail) return;
+    const timer = setTimeout(fetchNotifications, 0);
+    return () => clearTimeout(timer);
+  }, [fetchNotifications, userEmail]);
 
   const handleMarkAllRead = () => {
     if (!userEmail) return;

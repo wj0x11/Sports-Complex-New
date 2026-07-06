@@ -108,7 +108,7 @@ function ManageSports() {
       subtitle="Manage courts, coaches, schedules, and equipment across all sports facilities."
     >
         <div className="manage-toolbar">
-          <button type="button" className="add-sport-btn btn-primary" onClick={() => setIsAddModalOpen(true)}>Add New Sport</button>
+          <button type="button" className="add-sport-btn btn-primary" onClick={() => setIsAddModalOpen(true)}>+  Add New Sport</button>
         </div>
 
         <div className="sports-management-grid">

@@ -15,10 +15,6 @@ function SendNotifications() {
     isRead: false
   });
 
-  useEffect(() => {
-    loadNotifications();
-  }, []);
-
   const loadNotifications = async () => {
     try {
       const data = await apiClient.getNotifications();
@@ -27,6 +23,19 @@ function SendNotifications() {
       console.error("Error loading notifications:", error);
     }
   };
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const data = await apiClient.getNotifications();
+        setNotifications(data);
+      } catch (error) {
+        console.error("Error loading notifications:", error);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

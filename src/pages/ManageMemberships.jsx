@@ -4,6 +4,9 @@ import { apiClient } from "../services/api/client";
 import "../styles/manageMemberships.css";
 import { Plus, Edit, Trash2, X, CheckCircle2 } from "lucide-react";
 
+const defaultStartDate = new Date().toISOString().split('T')[0];
+const defaultEndDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
 function ManageMemberships() {
   const [memberships, setMemberships] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -13,8 +16,8 @@ function ManageMemberships() {
     userEmail: "",
     userName: "",
     type: "Bronze",
-    startDate: new Date().toISOString().split('T')[0],
-    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    startDate: defaultStartDate,
+    endDate: defaultEndDate,
     price: 0,
     status: "Active",
     features: []
@@ -26,10 +29,6 @@ function ManageMemberships() {
     { name: "Gold", price: 20000, features: ["Unlimited All Sports", "Free Water & Snacks", "30% Off Coaching", "Priority Booking", "Free Equipment Rental"] }
   ];
 
-  useEffect(() => {
-    loadMemberships();
-  }, []);
-
   const loadMemberships = async () => {
     try {
       const data = await apiClient.getMemberships();
@@ -38,6 +37,27 @@ function ManageMemberships() {
       console.error("Error loading memberships:", error);
     }
   };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchMemberships = async () => {
+      try {
+        const data = await apiClient.getMemberships();
+        if (isMounted) {
+          setMemberships(data);
+        }
+      } catch (error) {
+        console.error("Error loading memberships:", error);
+      }
+    };
+
+    fetchMemberships();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleTypeChange = (type) => {
     const selectedType = membershipTypes.find(t => t.name === type);
