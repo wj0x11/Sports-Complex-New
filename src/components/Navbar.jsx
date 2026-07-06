@@ -73,7 +73,7 @@ function Navbar() {
         <div className="navbar-container">
           <Link to="/" className="logo">
             <img
-              src="/favicon.svg"
+              src="/logo.png"
               alt="Battle Blast Sports Complex"
               className="logo-image"
             />
